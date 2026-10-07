@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- PWA manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+
+    <title>Work Time</title>
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("service-worker.js");
+        }
+    </script>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: #f4f5f7;
+            color: #17202a;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 600px;
+            min-height: 100vh;
+            margin: 0 auto;
+            background: white;
+            position: relative;
+            padding-bottom: 75px;
+        }
+
+        .page {
+            min-height: 100vh;
+            padding: 35px 20px 100px;
+        }
+
+        .hidden { display: none !important; }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .page-header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        label {
+            display: block;
+            margin: 20px 0 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #d9dde3;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            background: white;
+        }
+
+        input:focus { border-color: #2563eb; }
+
+        .button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 10px;
+            background: #17202a;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .button-blue { background: #2563eb; }
+        .button-blue:hover { background: #1d4ed8; }
+
+        .price-input {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 600;
+            padding: 18px;
+        }
+
+        .calculator-result {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 15px;
+            background: #f1f5f9;
+            text-align: center;
+        }
+
+        .calculator-result h2 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #475569;
+        }
+
+        .hours-number {
+            font-size: 40px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .days-result { color: #64748b; }
+
+        /* FIXED NAVIGATION */
+        .navigation {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 600px;
+            height: 75px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            z-index: 999;
+        }
+
+        .nav-button {
+            flex: 1;
+            border: none;
+            background: white;
+            color: #64748b;
+            font-size: 13px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .nav-icon {
+            display: block;
+            font-size: 21px;
+            margin-bottom: 4px;
+        }
+
+        .nav-button.active {
+            color: #2563eb;
+            font-weight: 700;
+        }
+
+        .saved-message {
+            margin-top: 15px;
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
+            background: #dcfce7;
+            color: #166534;
+            display: none;
+        }
+
+        .empty-wishlist {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .empty-wishlist .star {
+            font-size: 45px;
+            margin-bottom: 15px;
+        }
+
+        /* Toggle Buttons */
+        .toggle-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .toggle-button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #d9dde3;
+            background: #f8fafc;
+            cursor: pointer;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .toggle-button.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- CALCULATOR PAGE -->
+    <section id="calculatorPage" class="page">
+        <div class="page-header">
+            <h1>What does it cost you?</h1>
+            <p>See how much of your working life something costs.</p>
+        </div>
+
+        <input type="number" id="itemPrice" class="price-input" placeholder="£0.00" step="0.01">
+
+        <button class="button button-blue" onclick="calculateCost()">Calculate</button>
+
+        <div id="calculatorResult" class="calculator-result hidden">
+            <h2>That will cost you</h2>
+            <div id="hoursResult" class="hours-number"></div>
+            <div id="daysResult" class="days-result"></div>
+        </div>
+    </section>
+
+    <!-- WISHLIST PAGE -->
+    <section id="wishlistPage" class="page hidden">
+        <div class="page-header">
+            <h1>⭐ My Wishlist</h1>
+            <p>Things you're saving for</p>
+        </div>
+
+        <div class="empty-wishlist">
+            <div class="star">⭐</div>
+            <p>Your wishlist is empty</p>
+        </div>
+    </section>
+
+    <!-- ACCOUNT PAGE -->
+    <section id="accountPage" class="page hidden">
+        <div class="page-header">
+            <h1>Account</h1>
+            <p>Your settings and saved info</p>
+        </div>
+
+        <div class="toggle-container">
+            <div id="toggleHourly" class="toggle-button active" onclick="switchMode('hourly')">Hourly Pay</div>
+            <div id="toggleSalary" class="toggle-button" onclick="switchMode('salary')">Yearly Salary</div>
+        </div>
+
+        <div id="hourlyFields">
+            <label for="hourlyWage">Hourly Wage (£)</label>
+            <input type="number" id="hourlyWage" placeholder="£15.00" step="0.01">
+
+            <label for="hoursPerDay">Hours Worked Per Day</label>
+            <input type="number" id="hoursPerDay" placeholder="8" step="0.5">
+        </div>
+
+        <div id="salaryFields" class="hidden">
+            <label for="yearlySalary">Yearly Salary (£)</label>
+            <input type="number" id="yearlySalary" placeholder="£30000" step="100">
+
+            <label for="daysPerWeek">Days Worked Per Week</label>
+            <input type="number" id="daysPerWeek" placeholder="5" step="1">
+        </div>
+
+        <button class="button button-blue" onclick="saveAccountSettings()">Save Settings</button>
+
+        <div id="savedMessage" class="saved-message">
+            Saved successfully!
+        </div>
+    </section>
+
+</div>
+
+<!-- FIXED NAVIGATION -->
+<div class="navigation">
+    <button class="nav-button active" onclick="showPage('calculatorPage', this)">
+        <span class="nav-icon">🏠</span>
+        Home
+    </button>
+
+    <button class="nav-button" onclick="showPage('wishlistPage', this)">
+        <span class="nav-icon">⭐</span>
+        Wishlist
+    </button>
+
+    <button class="nav-button" onclick="showPage('accountPage', this)">
+        <span class="nav-icon">👤</span>
+        Account
+    </button>
+</div>
+
+<script>
+
+    let mode = localStorage.getItem("payMode") || "hourly";
+
+    function switchMode(newMode) {
+        mode = newMode;
+        localStorage.setItem("payMode", mode);
+
+        document.getElementById("toggleHourly").classList.toggle("active", mode === "hourly");
+        document.getElementById("toggleSalary").classList.toggle("active", mode === "salary");
+
+        document.getElementById("hourlyFields").classList.toggle("hidden", mode !== "hourly");
+        document.getElementById("salaryFields").classList.toggle("hidden", mode !== "salary");
+    }
+
+    switchMode(mode);
+
+    function saveAccountSettings() {
+        if (mode === "hourly") {
+            const wage = parseFloat(document.getElementById("hourlyWage").value);
+            const hours = parseFloat(document.getElementById("hoursPerDay").value);
+
+            if (!wage || !hours) return;
+
+            localStorage.setItem("hourlyWage", wage);
+            localStorage.setItem("hoursPerDay", hours);
+
+        } else {
+            const salary = parseFloat(document.getElementById("yearlySalary").value);
+            const days = parseFloat(document.getElementById("daysPerWeek").value);
+
+            if (!salary || !days) return;
+
+            localStorage.setItem("yearlySalary", salary);
+            localStorage.setItem("daysPerWeek", days);
+        }
+
+        document.getElementById("savedMessage").style.display = "block";
+        setTimeout(() => {
+            document.getElementById("savedMessage").style.display = "none";
+        }, 2000);
+    }
+
+    function calculateCost() {
+        const price = parseFloat(document.getElementById("itemPrice").value);
+        if (!price || price <= 0) return;
+
+        let hours;
+
+        if (mode === "hourly") {
+            const wage = parseFloat(localStorage.getItem("hourlyWage")) || 15;
+            hours = price / wage;
+
+        } else {
+            const salary = parseFloat(localStorage.getItem("yearlySalary")) || 30000;
+            const daysPerWeek = parseFloat(localStorage.getItem("daysPerWeek")) || 5;
+
+            const dailyPay = salary / (daysPerWeek * 52);
+            const hourlyPay = dailyPay / 8;
+
+            hours = price / hourlyPay;
+        }
+
+        const days = hours / 8;
+
+        document.getElementById("hoursResult").innerText = `${hours.toFixed(1)} hours`;
+        document.getElementById("daysResult").innerText = `${days.toFixed(1)} days of work`;
+
+        document.getElementById("calculatorResult").classList.remove("hidden");
+    }
+
+    function showPage(pageId, button) {
+        document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
+        document.getElementById(pageId).classList.remove("hidden");
+
+        document.querySelectorAll(".nav-button").forEach(b => b.classList.remove("active"));
+        button.classList.add("active");
+    }
+
+</script>
+
+</body>
+</html>
