@@ -1,384 +1,482 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
+    <title>Worktime Wishlist</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- PWA manifest -->
+    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
+    <link rel="icon" href="icons/icon-192.png">
 
-    <title>Work Time</title>
-
-    <script>
-        if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register("service-worker.js");
-        }
-    </script>
+    <!-- iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
 
     <style>
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-            background: #f4f5f7;
-            color: #17202a;
-        }
-
-        .app {
-            width: 100%;
-            max-width: 600px;
-            min-height: 100vh;
-            margin: 0 auto;
-            background: white;
-            position: relative;
-            padding-bottom: 75px;
-        }
-
-        .page {
-            min-height: 100vh;
-            padding: 35px 20px 100px;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        body { background: #0f172a; color: #e5e7eb; min-height: 100vh; display: flex; flex-direction: column; }
+        .app { max-width: 480px; margin: 0 auto; width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
+        .page { padding: 20px 16px 90px; }
+        .page-header h1 { font-size: 26px; margin-bottom: 4px; }
+        .page-header p { font-size: 14px; color: #9ca3af; margin-bottom: 20px; }
+        label { display: block; margin-top: 16px; margin-bottom: 4px; font-size: 14px; color: #9ca3af; }
+        input, select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #1f2937; background: #020617; color: #e5e7eb; font-size: 14px; }
+        input:focus, select:focus { outline: 2px solid #2563eb; outline-offset: 1px; }
+        .button { margin-top: 16px; width: 100%; padding: 12px; border-radius: 999px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; }
+        .button-blue { background: #2563eb; color: white; }
+        .button-blue:active { background: #1d4ed8; }
+        .button-secondary { background: #111827; color: #e5e7eb; border: 1px solid #1f2937; }
+        .navigation { position: fixed; bottom: 0; left: 0; right: 0; background: #020617; border-top: 1px solid #1f2937; display: flex; justify-content: space-around; padding: 8px 0; max-width: 480px; margin: 0 auto; }
+        .nav-button { flex: 1; background: none; border: none; color: #9ca3af; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; cursor: pointer; }
+        .nav-button.active { color: #e5e7eb; }
+        .nav-icon { font-size: 18px; }
         .hidden { display: none !important; }
-
-        .page-header {
-            text-align: center;
-            margin-bottom: 35px;
-        }
-
-        .page-header h1 {
-            margin: 0 0 8px;
-            font-size: 28px;
-        }
-
-        .page-header p {
-            margin: 0;
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        label {
-            display: block;
-            margin: 20px 0 8px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        input {
-            width: 100%;
-            padding: 14px;
-            border: 1px solid #d9dde3;
-            border-radius: 10px;
-            font-size: 16px;
-            outline: none;
-            background: white;
-        }
-
-        input:focus { border-color: #2563eb; }
-
-        .button {
-            width: 100%;
-            padding: 14px;
-            margin-top: 20px;
-            border: none;
-            border-radius: 10px;
-            background: #17202a;
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .button-blue { background: #2563eb; }
-        .button-blue:hover { background: #1d4ed8; }
-
-        .price-input {
-            text-align: center;
-            font-size: 32px;
-            font-weight: 600;
-            padding: 18px;
-        }
-
-        .calculator-result {
-            margin-top: 30px;
-            padding: 25px;
-            border-radius: 15px;
-            background: #f1f5f9;
-            text-align: center;
-        }
-
-        .calculator-result h2 {
-            margin-top: 0;
-            font-size: 16px;
-            color: #475569;
-        }
-
-        .hours-number {
-            font-size: 40px;
-            font-weight: 700;
-            margin: 10px 0;
-        }
-
-        .days-result { color: #64748b; }
-
-        /* FIXED NAVIGATION */
-        .navigation {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 600px;
-            height: 75px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            background: white;
-            border-top: 1px solid #e2e8f0;
-            z-index: 999;
-        }
-
-        .nav-button {
-            flex: 1;
-            border: none;
-            background: white;
-            color: #64748b;
-            font-size: 13px;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .nav-icon {
-            display: block;
-            font-size: 21px;
-            margin-bottom: 4px;
-        }
-
-        .nav-button.active {
-            color: #2563eb;
-            font-weight: 700;
-        }
-
-        .saved-message {
-            margin-top: 15px;
-            padding: 12px;
-            text-align: center;
-            border-radius: 8px;
-            background: #dcfce7;
-            color: #166534;
-            display: none;
-        }
-
-        .empty-wishlist {
-            text-align: center;
-            padding: 60px 20px;
-            color: #64748b;
-        }
-
-        .empty-wishlist .star {
-            font-size: 45px;
-            margin-bottom: 15px;
-        }
-
-        /* Toggle Buttons */
-        .toggle-container {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .toggle-button {
-            flex: 1;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #d9dde3;
-            background: #f8fafc;
-            cursor: pointer;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .toggle-button.active {
-            background: #2563eb;
-            color: white;
-            border-color: #2563eb;
-        }
+        .calculator-result { margin-top: 20px; padding: 16px; border-radius: 16px; background: #020617; border: 1px solid #1f2937; }
+        .hours-number { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+        .days-result { font-size: 13px; color: #9ca3af; }
+        .empty-wishlist { margin-top: 20px; padding: 16px; border-radius: 16px; background: #020617; border: 1px dashed #374151; font-size: 14px; color: #9ca3af; }
+        .wishlist-item { background: #020617; border: 1px solid #1f2937; padding: 14px; border-radius: 14px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .wishlist-item small { color: #9ca3af; font-size: 12px; }
+        .saved-banner { margin-top: 10px; font-size: 12px; color: #22c55e; }
     </style>
 </head>
-
 <body>
-
 <div class="app">
 
-    <!-- CALCULATOR PAGE -->
-    <section id="calculatorPage" class="page">
+    <!-- Refined Calculator / Home -->
+    <section id="homePage" class="page">
         <div class="page-header">
-            <h1>What does it cost you?</h1>
-            <p>See how much of your working life something costs.</p>
+            <h1>Worktime Calculator</h1>
+            <p>Uses your Account settings to show the true cost of an item</p>
         </div>
 
-        <input type="number" id="itemPrice" class="price-input" placeholder="£0.00" step="0.01">
+        <label>Price of Item (£)</label>
+        <input type="number" id="itemPriceInput" step="0.01" placeholder="100">
 
         <button class="button button-blue" onclick="calculateCost()">Calculate</button>
 
-        <div id="calculatorResult" class="calculator-result hidden">
-            <h2>That will cost you</h2>
+        <div id="calcResult" class="calculator-result hidden">
             <div id="hoursResult" class="hours-number"></div>
             <div id="daysResult" class="days-result"></div>
         </div>
     </section>
 
-    <!-- WISHLIST PAGE -->
+    <!-- Wishlist -->
     <section id="wishlistPage" class="page hidden">
         <div class="page-header">
-            <h1>⭐ My Wishlist</h1>
-            <p>Things you're saving for</p>
+            <h1>Wishlist</h1>
+            <p>Things you’re thinking about buying</p>
         </div>
 
         <div class="empty-wishlist">
-            <div class="star">⭐</div>
-            <p>Your wishlist is empty</p>
+            No items yet. Tap the + button to add something you’re considering.
         </div>
     </section>
 
-    <!-- ACCOUNT PAGE -->
+    <!-- Account / Expenditures -->
     <section id="accountPage" class="page hidden">
         <div class="page-header">
             <h1>Account</h1>
-            <p>Your settings and saved info</p>
+            <p>Your work and monthly expenses</p>
         </div>
 
-        <div class="toggle-container">
-            <div id="toggleHourly" class="toggle-button active" onclick="switchMode('hourly')">Hourly Pay</div>
-            <div id="toggleSalary" class="toggle-button" onclick="switchMode('salary')">Yearly Salary</div>
+        <label>Pay Type</label>
+        <select id="accountPayMode">
+            <option value="hourly">Hourly Wage</option>
+            <option value="salary">Yearly Salary</option>
+        </select>
+
+        <div id="accountHourlyInputs">
+            <label>Hourly Wage (£)</label>
+            <input type="number" id="accountHourlyWage" step="0.01">
+
+            <label>Hours per Day</label>
+            <input type="number" id="accountHoursPerDay" step="0.1">
         </div>
 
-        <div id="hourlyFields">
-            <label for="hourlyWage">Hourly Wage (£)</label>
-            <input type="number" id="hourlyWage" placeholder="£15.00" step="0.01">
+        <div id="accountSalaryInputs" class="hidden">
+            <label>Yearly Salary (£)</label>
+            <input type="number" id="accountYearlySalary" step="100">
 
-            <label for="hoursPerDay">Hours Worked Per Day</label>
-            <input type="number" id="hoursPerDay" placeholder="8" step="0.5">
+            <label>Days per Week</label>
+            <input type="number" id="accountDaysPerWeek" step="0.1">
         </div>
 
-        <div id="salaryFields" class="hidden">
-            <label for="yearlySalary">Yearly Salary (£)</label>
-            <input type="number" id="yearlySalary" placeholder="£30000" step="100">
+        <h2 style="margin-top:30px;">Monthly Expenditures</h2>
 
-            <label for="daysPerWeek">Days Worked Per Week</label>
-            <input type="number" id="daysPerWeek" placeholder="5" step="1">
-        </div>
+        <label>Tax (£)</label>
+        <input type="number" id="expTax" step="0.01" placeholder="0">
+
+        <label>Mortgage / Rent (£)</label>
+        <input type="number" id="expHousing" step="0.01" placeholder="0">
+
+        <label>Electricity (£)</label>
+        <input type="number" id="expElectric" step="0.01" placeholder="0">
+
+        <label>Water (£)</label>
+        <input type="number" id="expWater" step="0.01" placeholder="0">
+
+        <label>Other Bills (£)</label>
+        <input type="number" id="expOther" step="0.01" placeholder="0">
 
         <button class="button button-blue" onclick="saveAccountSettings()">Save Settings</button>
+        <div id="savedMessage" class="saved-banner hidden">Saved.</div>
 
-        <div id="savedMessage" class="saved-message">
-            Saved successfully!
+        <div id="disposableResult" class="calculator-result hidden">
+            <div class="hours-number" id="disposableAmount"></div>
+            <div class="days-result" id="disposableDetails"></div>
         </div>
     </section>
 
-</div>
+    <!-- Savings Goal -->
+    <section id="savingsPage" class="page hidden">
+        <div class="page-header">
+            <h1>Savings Goal</h1>
+            <p>Track progress toward something big</p>
+        </div>
 
-<!-- FIXED NAVIGATION -->
-<div class="navigation">
-    <button class="nav-button active" onclick="showPage('calculatorPage', this)">
-        <span class="nav-icon">🏠</span>
-        Home
+        <label>Goal Name</label>
+        <input type="text" id="goalName" placeholder="New PC, Holiday, Car…">
+
+        <label>Target Amount (£)</label>
+        <input type="number" id="goalTarget" step="0.01" placeholder="1000">
+
+        <label>Your Current Savings (£)</label>
+        <input type="number" id="goalSaved" step="0.01" placeholder="0">
+
+        <button class="button button-blue" onclick="saveGoal()">Save Goal</button>
+
+        <div id="goalProgress" class="calculator-result hidden">
+            <h2>Progress</h2>
+            <div id="goalPercent" class="hours-number"></div>
+            <div id="goalTime" class="days-result"></div>
+
+            <div style="background:#1f2937; height:20px; border-radius:10px; margin-top:20px;">
+                <div id="goalBar" style="height:100%; width:0%; background:#2563eb; border-radius:10px;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Add Item Modal -->
+    <div id="addItemModal" class="hidden" style="position: fixed; inset: 0; background: rgba(15,23,42,0.85); display: flex; justify-content: center; align-items: center; z-index: 20;">
+        <div style="background:#020617; padding:20px; border-radius:16px; width:90%; max-width:400px; border:1px solid #1f2937;">
+            <h2 style="margin-bottom:10px;">Add Wishlist Item</h2>
+
+            <label>Name</label>
+            <input type="text" id="newItemName">
+
+            <label>Price (£)</label>
+            <input type="number" id="newItemPrice" step="0.01">
+
+            <button class="button button-blue" onclick="saveNewItem()">Add to Wishlist</button>
+            <button class="button button-secondary" onclick="closeAddItemModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-button active" onclick="showPage('homePage', this)">
+            <span class="nav-icon">⌚</span>
+            Calculator
+        </button>
+        <button class="nav-button" onclick="showPage('wishlistPage', this)">
+            <span class="nav-icon">🧾</span>
+            Wishlist
+        </button>
+        <button class="nav-button" onclick="showPage('savingsPage', this)">
+            <span class="nav-icon">💰</span>
+            Savings
+        </button>
+        <button class="nav-button" onclick="showPage('accountPage', this)">
+            <span class="nav-icon">👤</span>
+            Account
+        </button>
+    </div>
+
+    <!-- Floating Add Button -->
+    <button id="addItemButton" class="button button-blue"
+            style="position: fixed; bottom: 80px; right: 20px; border-radius: 50%; width: 56px; height: 56px; font-size: 28px; padding:0;">
+        +
     </button>
 
-    <button class="nav-button" onclick="showPage('wishlistPage', this)">
-        <span class="nav-icon">⭐</span>
-        Wishlist
-    </button>
-
-    <button class="nav-button" onclick="showPage('accountPage', this)">
-        <span class="nav-icon">👤</span>
-        Account
-    </button>
 </div>
 
 <script>
-
     let mode = localStorage.getItem("payMode") || "hourly";
+    let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
 
-    function switchMode(newMode) {
-        mode = newMode;
-        localStorage.setItem("payMode", mode);
+    function showPage(id, btn) {
+        document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
+        document.getElementById(id).classList.remove("hidden");
 
-        document.getElementById("toggleHourly").classList.toggle("active", mode === "hourly");
-        document.getElementById("toggleSalary").classList.toggle("active", mode === "salary");
+        document.querySelectorAll(".nav-button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
 
-        document.getElementById("hourlyFields").classList.toggle("hidden", mode !== "hourly");
-        document.getElementById("salaryFields").classList.toggle("hidden", mode !== "salary");
+        document.getElementById("addItemButton").style.display = (id === "wishlistPage") ? "block" : "none";
     }
 
-    switchMode(mode);
+    document.getElementById("accountPayMode").value = mode;
+
+    function syncModeUI() {
+        const m = mode;
+        document.getElementById("accountPayMode").value = m;
+        document.getElementById("accountHourlyInputs").classList.toggle("hidden", m !== "hourly");
+        document.getElementById("accountSalaryInputs").classList.toggle("hidden", m !== "salary");
+    }
+
+    document.getElementById("accountPayMode").addEventListener("change", e => {
+        mode = e.target.value;
+        localStorage.setItem("payMode", mode);
+        syncModeUI();
+        renderDisposable();
+        renderWishlist();
+        renderGoal();
+    });
+
+    function loadAccountSettings() {
+        const hourlyWage = parseFloat(localStorage.getItem("hourlyWage")) || "";
+        const hoursPerDay = parseFloat(localStorage.getItem("hoursPerDay")) || "";
+        const yearlySalary = parseFloat(localStorage.getItem("yearlySalary")) || "";
+        const daysPerWeek = parseFloat(localStorage.getItem("daysPerWeek")) || "";
+
+        document.getElementById("accountHourlyWage").value = hourlyWage || "";
+        document.getElementById("accountHoursPerDay").value = hoursPerDay || "";
+        document.getElementById("accountYearlySalary").value = yearlySalary || "";
+        document.getElementById("accountDaysPerWeek").value = daysPerWeek || "";
+    }
+
+    function loadExpenditures() {
+        const exp = JSON.parse(localStorage.getItem("expenditures") || "{}");
+        document.getElementById("expTax").value = exp.tax || "";
+        document.getElementById("expHousing").value = exp.housing || "";
+        document.getElementById("expElectric").value = exp.electric || "";
+        document.getElementById("expWater").value = exp.water || "";
+        document.getElementById("expOther").value = exp.other || "";
+    }
 
     function saveAccountSettings() {
         if (mode === "hourly") {
-            const wage = parseFloat(document.getElementById("hourlyWage").value);
-            const hours = parseFloat(document.getElementById("hoursPerDay").value);
-
+            const wage = parseFloat(document.getElementById("accountHourlyWage").value);
+            const hours = parseFloat(document.getElementById("accountHoursPerDay").value);
             if (!wage || !hours) return;
-
             localStorage.setItem("hourlyWage", wage);
             localStorage.setItem("hoursPerDay", hours);
-
         } else {
-            const salary = parseFloat(document.getElementById("yearlySalary").value);
-            const days = parseFloat(document.getElementById("daysPerWeek").value);
-
+            const salary = parseFloat(document.getElementById("accountYearlySalary").value);
+            const days = parseFloat(document.getElementById("accountDaysPerWeek").value);
             if (!salary || !days) return;
-
             localStorage.setItem("yearlySalary", salary);
             localStorage.setItem("daysPerWeek", days);
         }
 
-        document.getElementById("savedMessage").style.display = "block";
-        setTimeout(() => {
-            document.getElementById("savedMessage").style.display = "none";
-        }, 2000);
+        const exp = {
+            tax: parseFloat(document.getElementById("expTax").value) || 0,
+            housing: parseFloat(document.getElementById("expHousing").value) || 0,
+            electric: parseFloat(document.getElementById("expElectric").value) || 0,
+            water: parseFloat(document.getElementById("expWater").value) || 0,
+            other: parseFloat(document.getElementById("expOther").value) || 0
+        };
+        localStorage.setItem("expenditures", JSON.stringify(exp));
+
+        document.getElementById("savedMessage").classList.remove("hidden");
+        setTimeout(() => document.getElementById("savedMessage").classList.add("hidden"), 2000);
+
+        renderDisposable();
+        renderGoal();
+        renderWishlist();
     }
 
-    function calculateCost() {
-        const price = parseFloat(document.getElementById("itemPrice").value);
-        if (!price || price <= 0) return;
+    function getDisposableIncome() {
+        const exp = JSON.parse(localStorage.getItem("expenditures") || "{}");
+        const totalExpenses =
+            (exp.tax || 0) +
+            (exp.housing || 0) +
+            (exp.electric || 0) +
+            (exp.water || 0) +
+            (exp.other || 0);
 
-        let hours;
-
+        let monthlyIncome;
         if (mode === "hourly") {
             const wage = parseFloat(localStorage.getItem("hourlyWage")) || 15;
-            hours = price / wage;
+            const hoursPerDay = parseFloat(localStorage.getItem("hoursPerDay")) || 8;
+            monthlyIncome = wage * hoursPerDay * 22;
+        } else {
+            const salary = parseFloat(localStorage.getItem("yearlySalary")) || 30000;
+            monthlyIncome = salary / 12;
+        }
+        return monthlyIncome - totalExpenses;
+    }
 
+    function renderDisposable() {
+        const disposable = getDisposableIncome();
+        if (!isFinite(disposable)) return;
+
+        document.getElementById("disposableResult").classList.remove("hidden");
+        document.getElementById("disposableAmount").innerText = `£${disposable.toFixed(2)} / month`;
+        document.getElementById("disposableDetails").innerText =
+            disposable <= 0
+                ? "Your expenses are equal to or higher than your income."
+                : "This is what’s left after tax, housing, and bills.";
+    }
+
+    function calculateCostRaw(price) {
+        let hours;
+        if (mode === "hourly") {
+            const wage = parseFloat(localStorage.getItem("hourlyWage")) || 15;
+            const hoursPerDay = parseFloat(localStorage.getItem("hoursPerDay")) || 8;
+            hours = price / wage;
+            return { hours, days: hours / hoursPerDay };
         } else {
             const salary = parseFloat(localStorage.getItem("yearlySalary")) || 30000;
             const daysPerWeek = parseFloat(localStorage.getItem("daysPerWeek")) || 5;
-
             const dailyPay = salary / (daysPerWeek * 52);
             const hourlyPay = dailyPay / 8;
-
             hours = price / hourlyPay;
+            return { hours, days: hours / 8 };
         }
-
-        const days = hours / 8;
-
-        document.getElementById("hoursResult").innerText = `${hours.toFixed(1)} hours`;
-        document.getElementById("daysResult").innerText = `${days.toFixed(1)} days of work`;
-
-        document.getElementById("calculatorResult").classList.remove("hidden");
     }
 
-    function showPage(pageId, button) {
-        document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
-        document.getElementById(pageId).classList.remove("hidden");
+    function calculateCost() {
+        const price = parseFloat(document.getElementById("itemPriceInput").value);
+        if (!price || price <= 0) return;
 
-        document.querySelectorAll(".nav-button").forEach(b => b.classList.remove("active"));
-        button.classList.add("active");
+        const { hours, days } = calculateCostRaw(price);
+        const disposable = getDisposableIncome();
+        const months = disposable > 0 ? price / disposable : Infinity;
+        const percent = disposable > 0 ? (price / disposable) * 100 : Infinity;
+
+        document.getElementById("calcResult").classList.remove("hidden");
+        document.getElementById("hoursResult").innerText = `${hours.toFixed(1)} hours of work`;
+        document.getElementById("daysResult").innerText =
+            disposable > 0
+                ? `${days.toFixed(1)} days • ${months.toFixed(2)} months of disposable income • ${percent.toFixed(1)}% of monthly disposable income`
+                : `${days.toFixed(1)} days • disposable income not yet set or negative`;
     }
 
+    function renderWishlist() {
+        const container = document.getElementById("wishlistPage");
+        const empty = container.querySelector(".empty-wishlist");
+
+        container.querySelectorAll(".wishlist-item").forEach(el => el.remove());
+
+        if (!wishlist.length) {
+            empty.style.display = "block";
+            return;
+        }
+        empty.style.display = "none";
+
+        const disposable = getDisposableIncome();
+
+        wishlist.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "wishlist-item";
+
+            let months = disposable > 0 ? item.price / disposable : null;
+            let percent = disposable > 0 ? (item.price / disposable) * 100 : null;
+
+            div.innerHTML = `
+                <div>
+                    <strong>${item.name}</strong><br>
+                    £${item.price.toFixed(2)}<br>
+                    <small>${item.hours.toFixed(1)} hours • ${item.days.toFixed(1)} days</small><br>
+                    <small>${
+                        disposable > 0
+                            ? `${months.toFixed(2)} months disposable • ${percent.toFixed(1)}% of monthly disposable`
+                            : `Set your account and expenditures to see disposable impact`
+                    }</small>
+                </div>
+                <button onclick="removeItem('${item.id}')" style="background:none;border:none;font-size:22px;color:#dc2626;">×</button>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function openAddItemModal() {
+        document.getElementById("addItemModal").classList.remove("hidden");
+    }
+
+    function closeAddItemModal() {
+        document.getElementById("addItemModal").classList.add("hidden");
+        document.getElementById("newItemName").value = "";
+        document.getElementById("newItemPrice").value = "";
+    }
+
+    document.getElementById("addItemButton").onclick = openAddItemModal;
+
+    function saveNewItem() {
+        const name = document.getElementById("newItemName").value.trim();
+        const price = parseFloat(document.getElementById("newItemPrice").value);
+        if (!name || !price || price <= 0) return;
+
+        const { hours, days } = calculateCostRaw(price);
+        const item = {
+            id: Date.now().toString(),
+            name,
+            price,
+            hours,
+            days
+        };
+
+        wishlist.push(item);
+        localStorage.setItem("wishlist", JSON.stringify(wishlist));
+
+        closeAddItemModal();
+        renderWishlist();
+    }
+
+    function removeItem(id) {
+        wishlist = wishlist.filter(item => item.id !== id);
+        localStorage.setItem("wishlist", JSON.stringify(wishlist));
+        renderWishlist();
+    }
+
+    function saveGoal() {
+        const name = document.getElementById("goalName").value.trim();
+        const target = parseFloat(document.getElementById("goalTarget").value);
+        const saved = parseFloat(document.getElementById("goalSaved").value);
+        if (!name || !target || target <= 0 || saved < 0) return;
+
+        const goal = { name, target, saved };
+        localStorage.setItem("savingsGoal", JSON.stringify(goal));
+        renderGoal();
+    }
+
+    function renderGoal() {
+        const goal = JSON.parse(localStorage.getItem("savingsGoal") || "{}");
+        if (!goal.name) return;
+
+        const percent = Math.min((goal.saved / goal.target) * 100, 100);
+        const disposable = getDisposableIncome();
+        const savedMonths = disposable > 0 ? goal.saved / disposable : null;
+        const remainingMonths = disposable > 0 ? (goal.target - goal.saved) / disposable : null;
+
+        document.getElementById("goalPercent").innerText = `${percent.toFixed(1)}% complete`;
+        document.getElementById("goalTime").innerText =
+            disposable > 0
+                ? `${savedMonths.toFixed(2)} months saved • ${remainingMonths.toFixed(2)} months remaining`
+                : `Set your account and expenditures to see time equivalents`;
+
+        document.getElementById("goalBar").style.width = `${percent}%`;
+        document.getElementById("goalProgress").classList.remove("hidden");
+
+        document.getElementById("goalName").value = goal.name;
+        document.getElementById("goalTarget").value = goal.target;
+        document.getElementById("goalSaved").value = goal.saved;
+    }
+
+    syncModeUI();
+    loadAccountSettings();
+    loadExpenditures();
+    renderDisposable();
+    renderWishlist();
+    renderGoal();
+
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("service-worker.js").catch(() => {});
+    }
 </script>
-
 </body>
 </html>
