@@ -1,798 +1,2015 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Worktime Wishlist</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2563eb">
-    <link rel="icon" href="icons/icon-192.png">
-
-    <!-- iOS -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
-
+    <meta charset="UTF-8" />
+    <title>MoneyFlow PWA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="manifest" href="manifest.json" />
     <style>
         :root {
-            --text-size: 15px;
             --bg: #0f172a;
+            --bg-alt: #020617;
+            --card: #1e293b;
+            --card-alt: #0b1120;
+            --accent: #38bdf8;
+            --accent-soft: rgba(56,189,248,0.2);
             --text: #e5e7eb;
-            --card-bg: #020617;
+            --muted: #9ca3af;
+            --danger: #ef4444;
+            --success: #22c55e;
             --border: #1f2937;
+            --shadow-soft: 0 10px 25px rgba(15,23,42,0.8);
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+        }
+
+        body.light-mode {
+            --bg: #f8fafc;
+            --bg-alt: #ffffff;
+            --card: #ffffff;
+            --card-alt: #f1f5f9;
+            --accent: #0ea5e9;
+            --accent-soft: rgba(14,165,233,0.15);
+            --text: #0f172a;
+            --muted: #475569;
+            --danger: #b91c1c;
+            --success: #16a34a;
+            --border: #cbd5e1;
+            --shadow-soft: 0 4px 12px rgba(15,23,42,0.12);
         }
 
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
 
         body {
-            background: var(--bg);
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, var(--card) 0, var(--bg-alt) 50%, #000 100%);
             color: var(--text);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            font-size: var(--text-size);
         }
 
-        .app {
-            max-width: 480px;
+        header {
+            padding: 12px 16px;
+            background: linear-gradient(to right, var(--card-alt), var(--bg-alt));
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.1rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        header span {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        main {
+            flex: 1;
+            padding: 12px 12px 64px;
+            max-width: 960px;
             margin: 0 auto;
             width: 100%;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
 
-        .page {
-            padding: 20px 16px 90px;
-        }
-
-        .page-header h1 {
-            font-size: 26px;
-            margin-bottom: 4px;
-        }
-
-        .page-header p {
-            font-size: 14px;
-            color: #9ca3af;
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            font-size: 18px;
-            margin-top: 10px;
-            margin-bottom: 8px;
-        }
-
-        label {
-            display: block;
-            margin-top: 16px;
-            margin-bottom: 4px;
-            font-size: 14px;
-            color: #9ca3af;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: var(--card-bg);
-            color: var(--text);
-            font-size: 14px;
-        }
-
-        input:focus, select:focus {
-            outline: 2px solid #2563eb;
-            outline-offset: 1px;
-        }
-
-        .button {
-            margin-top: 16px;
-            width: 100%;
-            padding: 12px;
-            border-radius: 999px;
-            border: none;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .button-blue {
-            background: #2563eb;
-            color: white;
-        }
-
-        .button-blue:active {
-            background: #1d4ed8;
-        }
-
-        .button-secondary {
-            background: #111827;
-            color: #e5e7eb;
-            border: 1px solid var(--border);
-        }
-
-        .navigation {
+        .nav-bar {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: #020617;
+            background: rgba(15,23,42,0.96);
             border-top: 1px solid var(--border);
             display: flex;
             justify-content: space-around;
-            padding: 8px 0;
-            max-width: 480px;
-            margin: 0 auto;
+            padding: 6px 0;
+            backdrop-filter: blur(12px);
         }
 
-        .nav-button {
+        body.light-mode .nav-bar {
+            background: rgba(248,250,252,0.96);
+        }
+
+        .nav-btn {
             flex: 1;
-            background: none;
-            border: none;
-            color: #9ca3af;
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
+            text-align: center;
             padding: 6px 0;
+            font-size: 0.75rem;
+            color: var(--muted);
             cursor: pointer;
         }
 
-        .nav-button.active {
-            color: #e5e7eb;
+        .nav-btn span {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 2px;
         }
 
-        .nav-icon {
-            font-size: 18px;
+        .nav-btn.active {
+            color: var(--accent);
+            font-weight: 600;
         }
 
-        .hidden {
-            display: none !important;
+        .page {
+            display: none;
         }
 
-        .calculator-result {
-            margin-top: 20px;
-            padding: 16px;
-            border-radius: 16px;
-            background: var(--card-bg);
+        .page.active {
+            display: block;
+        }
+
+        .card {
+            background: radial-gradient(circle at top left, var(--card) 0, var(--bg-alt) 60%);
+            border-radius: var(--radius-lg);
+            padding: 14px 14px 12px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(148,163,184,0.2);
+        }
+
+        body.light-mode .card {
+            border-color: var(--border);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .card-subtitle {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 6px 8px;
+            border-radius: var(--radius-md);
             border: 1px solid var(--border);
+            background: var(--bg-alt);
+            color: var(--text);
+            font-size: 0.85rem;
         }
 
-        .hours-number {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 4px;
+        textarea {
+            min-height: 60px;
+            resize: vertical;
         }
 
-        .days-result {
-            font-size: 13px;
-            color: #9ca3af;
+        input:focus, select:focus, textarea:focus {
+            outline: 1px solid var(--accent);
+            border-color: var(--accent);
         }
 
-        .empty-wishlist {
-            margin-top: 20px;
-            padding: 16px;
-            border-radius: 16px;
-            background: var(--card-bg);
-            border: 1px dashed #374151;
-            font-size: 14px;
-            color: #9ca3af;
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+            flex-wrap: wrap;
         }
 
-        .wishlist-item {
-            background: var(--card-bg);
+        .btn {
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: var(--card-alt);
+            color: var(--text);
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--accent), var(--success));
+            border-color: transparent;
+            color: #0b1120;
+            font-weight: 600;
+        }
+
+        .btn-danger {
+            background: #7f1d1d;
+            border-color: #b91c1c;
+            color: #fecaca;
+        }
+
+        body.light-mode .btn-danger {
+            background: #fee2e2;
+            color: #7f1d1d;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border-color: var(--border);
+            color: var(--muted);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.8);
+            border: 1px solid rgba(148,163,184,0.3);
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        body.light-mode .pill {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+            margin: 10px 2px 6px;
+        }
+
+        .bubble-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .bubble {
+            border-radius: var(--radius-md);
+            padding: 8px 10px;
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .bubble-main {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bubble-title {
+            font-weight: 600;
+        }
+
+        .bubble-sub {
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+
+        .bubble-right {
+            text-align: right;
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .progress-bar-wrap {
+            margin-top: 6px;
+            background: var(--bg-alt);
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            padding: 2px;
+        }
+
+        .progress-bar-inner {
+            height: 8px;
+            border-radius: 999px;
+            transition: width 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .progress-label-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 4px;
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            border: 1px solid rgba(148,163,184,0.4);
+        }
+
+        .badge-success {
+            background: rgba(22,163,74,0.15);
+            color: #bbf7d0;
+            border-color: rgba(22,163,74,0.5);
+        }
+
+        .badge-warning {
+            background: rgba(234,179,8,0.15);
+            color: #fef3c7;
+            border-color: rgba(234,179,8,0.5);
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        .divider {
+            border-top: 1px dashed var(--border);
+            margin: 8px 0;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        body.light-mode .modal-backdrop {
+            background: rgba(15,23,42,0.35);
+        }
+
+        .modal {
+            background: var(--bg-alt);
+            border-radius: var(--radius-lg);
             border: 1px solid var(--border);
             padding: 14px;
-            border-radius: 14px;
-            margin-top: 12px;
+            max-width: 420px;
+            width: calc(100% - 32px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .modal-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .flex-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .wishlist-item small {
-            color: #9ca3af;
-            font-size: 12px;
+        .small {
+            font-size: 0.75rem;
         }
 
-        .saved-banner {
-            margin-top: 10px;
-            font-size: 12px;
-            color: #22c55e;
+        .link {
+            color: var(--accent);
+            font-size: 0.8rem;
+            text-decoration: none;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        @media (min-width: 768px) {
+            main {
+                padding: 16px 16px 72px;
+            }
         }
     </style>
 </head>
 <body>
-<div class="app">
+<header>
+    <div>
+        <h1>MoneyFlow</h1>
+        <span>Income • Bills • Wishlist • Savings • PWA</span>
+    </div>
+</header>
 
-    <!-- Refined Calculator / Home -->
-    <section id="homePage" class="page">
-        <div class="page-header">
-            <h1>Worktime Calculator</h1>
-            <p>Uses your Account settings to show the true cost of an item</p>
-        </div>
+<main>
+    <!-- Calculator Page (minimal) -->
+    <section id="page-calculator" class="page active">
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Is it worth it?</div>
+                    <div class="card-subtitle">Use your income & bills from Account to judge a purchase</div>
+                </div>
+            </div>
 
-        <label>Price of Item</label>
-        <input type="number" id="itemPriceInput" step="0.01" placeholder="100">
+            <div class="input-row">
+                <input id="calcItemCost" type="number" step="0.01" placeholder="Item cost" />
+            </div>
 
-        <button class="button button-blue" onclick="calculateCost()">Calculate</button>
+            <div class="muted small" style="margin-bottom:6px;">
+                This uses your disposable income from the Account page.
+            </div>
 
-        <div id="calcResult" class="calculator-result hidden">
-            <div id="hoursResult" class="hours-number"></div>
-            <div id="daysResult" class="days-result"></div>
-        </div>
-    </section>
+            <div class="btn-row">
+                <button class="btn btn-primary" id="btnCalcImpact">Calculate impact</button>
+                <button class="btn btn-ghost" id="btnCalcImpactReset">Reset</button>
+            </div>
 
-    <!-- Wishlist -->
-    <section id="wishlistPage" class="page hidden">
-        <div class="page-header">
-            <h1>Wishlist</h1>
-            <p>Things you’re thinking about buying</p>
-        </div>
+            <div class="divider"></div>
 
-        <div class="empty-wishlist">
-            No items yet. Tap the + button to add something you’re considering.
-        </div>
-    </section>
+            <div class="muted">Result</div>
+            <div class="progress-label-row">
+                <span>Hours of work</span>
+                <span id="impactHoursLabel">–</span>
+            </div>
+            <div class="progress-label-row">
+                <span>Days of work</span>
+                <span id="impactDaysLabel">–</span>
+            </div>
+            <div class="progress-label-row">
+                <span>Months of disposable income</span>
+                <span id="impactMonthsLabel">–</span>
+            </div>
+            <div class="progress-label-row">
+                <span>% of monthly disposable income</span>
+                <span id="impactPercentLabel">–</span>
+            </div>
 
-    <!-- Account / Expenditures -->
-    <section id="accountPage" class="page hidden">
-        <div class="page-header">
-            <h1>Account</h1>
-            <p>Your work and monthly expenses</p>
-        </div>
+            <div class="divider"></div>
 
-        <label>Pay Type</label>
-        <select id="accountPayMode">
-            <option value="hourly">Hourly Wage</option>
-            <option value="salary">Yearly Salary</option>
-        </select>
-
-        <div id="accountHourlyInputs">
-            <label>Hourly Wage</label>
-            <input type="number" id="accountHourlyWage" step="0.01">
-
-            <label>Hours per Day</label>
-            <input type="number" id="accountHoursPerDay" step="0.1">
-        </div>
-
-        <div id="accountSalaryInputs" class="hidden">
-            <label>Yearly Salary</label>
-            <input type="number" id="accountYearlySalary" step="100">
-
-            <label>Days per Week</label>
-            <input type="number" id="accountDaysPerWeek" step="0.1">
-        </div>
-
-        <h2 style="margin-top:30px;">Monthly Expenditures</h2>
-
-        <label>Tax</label>
-        <input type="number" id="expTax" step="0.01" placeholder="0">
-
-        <label>Mortgage / Rent</label>
-        <input type="number" id="expHousing" step="0.01" placeholder="0">
-
-        <label>Electricity</label>
-        <input type="number" id="expElectric" step="0.01" placeholder="0">
-
-        <label>Water</label>
-        <input type="number" id="expWater" step="0.01" placeholder="0">
-
-        <label>Other Bills</label>
-        <input type="number" id="expOther" step="0.01" placeholder="0">
-
-        <button class="button button-blue" onclick="saveAccountSettings()">Save Settings</button>
-        <div id="savedMessage" class="saved-banner hidden">Saved.</div>
-
-        <div id="disposableResult" class="calculator-result hidden">
-            <div class="hours-number" id="disposableAmount"></div>
-            <div class="days-result" id="disposableDetails"></div>
-        </div>
-    </section>
-
-    <!-- Savings Goal -->
-    <section id="savingsPage" class="page hidden">
-        <div class="page-header">
-            <h1>Savings Goal</h1>
-            <p>Track progress toward something big</p>
-        </div>
-
-        <label>Goal Name</label>
-        <input type="text" id="goalName" placeholder="New PC, Holiday, Car…">
-
-        <label>Target Amount</label>
-        <input type="number" id="goalTarget" step="0.01" placeholder="1000">
-
-        <label>Your Current Savings</label>
-        <input type="number" id="goalSaved" step="0.01" placeholder="0">
-
-        <button class="button button-blue" onclick="saveGoal()">Save Goal</button>
-
-        <div id="goalProgress" class="calculator-result hidden">
-            <h2>Progress</h2>
-            <div id="goalPercent" class="hours-number"></div>
-            <div id="goalTime" class="days-result"></div>
-
-            <div style="background:#1f2937; height:20px; border-radius:10px; margin-top:20px;">
-                <div id="goalBar" style="height:100%; width:0%; background:#2563eb; border-radius:10px;"></div>
+            <div class="muted small" id="impactMessage">
+                Enter an item cost to see if it feels worth it to you.
             </div>
         </div>
     </section>
 
-    <!-- Options / Settings -->
-    <section id="optionsPage" class="page hidden">
-        <div class="page-header">
-            <h1>Options</h1>
-            <p>Personalise your experience</p>
+    <!-- Wishlist Page -->
+    <section id="page-wishlist" class="page">
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Wishlist</div>
+                    <div class="card-subtitle">Track things you want and how long they’ll take</div>
+                </div>
+                <button class="btn btn-primary" id="btnAddWishlist">➕ Add wishlist item</button>
+            </div>
+
+            <div class="muted small" id="wishlistDisposableInfo">Disposable income not set yet.</div>
+
+            <div class="section-title">Items</div>
+            <div id="wishlistList" class="bubble-list"></div>
+            <div class="muted small" id="wishlistEmpty">No wishlist items yet.</div>
         </div>
-
-        <h2>Currency</h2>
-        <select id="currencySelect">
-            <option value="GBP">£ GBP</option>
-            <option value="USD">$ USD</option>
-            <option value="EUR">€ EUR</option>
-            <option value="JPY">¥ JPY</option>
-        </select>
-
-        <h2 style="margin-top:30px;">Accessibility</h2>
-        <label>Text Size</label>
-        <select id="textSizeSelect">
-            <option value="small">Small</option>
-            <option value="medium">Medium</option>
-            <option value="large">Large</option>
-        </select>
-
-        <label style="margin-top:20px;">High Contrast Mode</label>
-        <select id="contrastSelect">
-            <option value="normal">Normal</option>
-            <option value="high">High Contrast</option>
-        </select>
-
-        <h2 style="margin-top:30px;">Regional Formatting</h2>
-        <label>Date Format</label>
-        <select id="dateFormatSelect">
-            <option value="DMY">DD/MM/YYYY</option>
-            <option value="MDY">MM/DD/YYYY</option>
-        </select>
-
-        <label style="margin-top:20px;">Decimal Format</label>
-        <select id="decimalFormatSelect">
-            <option value="dot">1,234.56</option>
-            <option value="comma">1.234,56</option>
-        </select>
-
-        <h2 style="margin-top:30px;">Work Units</h2>
-        <label>Hours per Day</label>
-        <input type="number" id="unitsHoursPerDay" step="0.1">
-
-        <label>Days per Week</label>
-        <input type="number" id="unitsDaysPerWeek" step="0.1">
-
-        <label>Work Weeks per Year</label>
-        <input type="number" id="unitsWeeksPerYear" step="0.1">
-
-        <button class="button button-blue" onclick="saveOptions()">Save Options</button>
-
-        <h2 style="margin-top:40px;">Danger Zone</h2>
-        <button class="button button-secondary" style="border-color:#dc2626;color:#dc2626;"
-                onclick="wipeAllData()">Wipe All Data</button>
     </section>
 
-    <!-- Add Item Modal -->
-    <div id="addItemModal" class="hidden" style="position: fixed; inset: 0; background: rgba(15,23,42,0.85); display: flex; justify-content: center; align-items: center; z-index: 20;">
-        <div style="background:#020617; padding:20px; border-radius:16px; width:90%; max-width:400px; border:1px solid #1f2937;">
-            <h2 style="margin-bottom:10px;">Add Wishlist Item</h2>
+    <!-- Savings Page -->
+    <section id="page-savings" class="page">
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Savings goals</div>
+                    <div class="card-subtitle">Create goals, add money, earn medals & trophies</div>
+                </div>
+                <button class="btn btn-primary" id="btnAddGoal">➕ Add savings goal</button>
+            </div>
 
-            <label>Name</label>
-            <input type="text" id="newItemName">
+            <div class="flex-row small" style="margin-bottom:6px;">
+                <span class="muted">Sort goals</span>
+                <select id="savingsSort" style="max-width:180px;">
+                    <option value="percent">% Complete</option>
+                    <option value="date">Date created</option>
+                    <option value="name">Name (A → Z)</option>
+                    <option value="target">Target amount</option>
+                    <option value="manual">Manual order</option>
+                </select>
+            </div>
 
-            <label>Price</label>
-            <input type="number" id="newItemPrice" step="0.01">
+            <div class="muted small" id="savingsDisposableInfo">Disposable income not set yet.</div>
 
-            <button class="button button-blue" onclick="saveNewItem()">Add to Wishlist</button>
-            <button class="button button-secondary" onclick="closeAddItemModal()">Cancel</button>
+            <div class="section-title">Active goals</div>
+            <div id="savingsActiveList" class="bubble-list"></div>
+            <div class="muted small" id="savingsActiveEmpty">No active savings goals yet.</div>
+
+            <div class="section-title" id="trophySectionTitle" style="display:none;">Completed goals (trophy cabinet)</div>
+            <div id="savingsCompletedList" class="bubble-list"></div>
+        </div>
+    </section>
+
+    <!-- Edit Goal Page -->
+    <section id="page-edit-goal" class="page">
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Edit savings goal</div>
+                    <div class="card-subtitle">Adjust details or remove contributions</div>
+                </div>
+                <button class="btn btn-ghost" id="btnEditGoalBack">← Back to savings</button>
+            </div>
+
+            <div class="muted small" id="editGoalNameLabel">Goal: –</div>
+
+            <div class="section-title">Details</div>
+            <div class="input-row">
+                <input id="editGoalName" placeholder="Goal name" />
+            </div>
+            <div class="input-row">
+                <input id="editGoalTarget" type="number" step="0.01" placeholder="Target amount" />
+            </div>
+            <div class="input-row">
+                <input id="editGoalLink" placeholder="Optional link (URL)" />
+            </div>
+            <div class="input-row">
+                <textarea id="editGoalNotes" placeholder="Notes (optional)"></textarea>
+            </div>
+
+            <div class="section-title">Contributions</div>
+            <div id="editGoalContributions" class="bubble-list"></div>
+            <div class="muted small" id="editGoalContributionsEmpty">No contributions yet.</div>
+
+            <div class="btn-row">
+                <button class="btn btn-primary" id="btnEditGoalSave">Save changes</button>
+                <button class="btn btn-danger" id="btnEditGoalDelete">Delete goal</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Account Page -->
+    <section id="page-account" class="page">
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Account & financial profile</div>
+                    <div class="card-subtitle">Income, deductions, bills, categories, disposable income</div>
+                </div>
+            </div>
+
+            <div class="section-title">Income</div>
+            <div class="input-row">
+                <select id="accIncomeType">
+                    <option value="hourly">Hourly</option>
+                    <option value="salary">Annual salary</option>
+                </select>
+                <input id="accCurrencySymbol" placeholder="Currency symbol" value="£" />
+            </div>
+
+            <div id="accHourlyInputs">
+                <div class="input-row">
+                    <input id="accHourlyRate" type="number" step="0.01" placeholder="Hourly rate" />
+                    <input id="accHoursPerDay" type="number" step="0.1" placeholder="Hours per day" />
+                </div>
+            </div>
+
+            <div id="accSalaryInputs" style="display:none;">
+                <div class="input-row">
+                    <input id="accAnnualSalary" type="number" step="0.01" placeholder="Annual salary" />
+                </div>
+            </div>
+
+            <div class="input-row">
+                <input id="accDaysPerWeek" type="number" step="0.1" placeholder="Days per week" />
+                <input id="accWeeksPerYear" type="number" step="0.1" placeholder="Weeks per year" />
+            </div>
+
+            <div class="input-row">
+                <input id="accTaxRate" type="number" step="0.1" placeholder="Tax rate (%)" />
+                <input id="accOtherDeductions" type="number" step="0.01" placeholder="Other monthly deductions" />
+            </div>
+
+            <div class="section-title">Categories</div>
+            <div class="btn-row">
+                <button class="btn btn-primary" id="btnAddCategory">➕ Add category</button>
+            </div>
+            <div id="categoryList" class="bubble-list"></div>
+            <div class="muted small" id="categoryEmpty">No categories yet.</div>
+
+            <div class="section-title">Bills / expenditures</div>
+            <div class="btn-row">
+                <button class="btn btn-primary" id="btnAddBill">➕ Add expenditure</button>
+            </div>
+            <div id="billList" class="bubble-list"></div>
+            <div class="muted small" id="billEmpty">No expenditures yet.</div>
+
+            <div class="divider"></div>
+
+            <div class="section-title">Disposable income</div>
+            <div class="progress-label-row">
+                <span>Net monthly income</span>
+                <span id="accNetMonthlyLabel">–</span>
+            </div>
+            <div class="progress-label-row">
+                <span>Total bills</span>
+                <span id="accBillsTotalLabel">–</span>
+            </div>
+            <div class="progress-label-row">
+                <span>Disposable monthly</span>
+                <span id="accDisposableMonthlyLabel">–</span>
+            </div>
+            <div class="progress-label-row">
+                <span>Disposable daily</span>
+                <span id="accDisposableDailyLabel">–</span>
+            </div>
+            <div class="progress-label-row">
+                <span>Disposable hourly</span>
+                <span id="accDisposableHourlyLabel">–</span>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn btn-primary" id="btnAccSave">Save profile</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="section-title">Data overview</div>
+            <div class="muted small" id="accountSummary">Loading summary…</div>
+
+            <div class="btn-row">
+                <button class="btn btn-danger" id="btnResetAll">Reset all data</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Options Page -->
+    <section id="page-options" class="page">
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Options</div>
+                    <div class="card-subtitle">Formatting, behaviour, theme</div>
+                </div>
+            </div>
+
+            <div class="section-title">Formatting</div>
+            <div class="input-row">
+                <select id="optCurrencyPosition">
+                    <option value="prefix">Prefix (e.g. £100)</option>
+                    <option value="suffix">Suffix (e.g. 100£)</option>
+                </select>
+            </div>
+            <div class="input-row">
+                <select id="optDateFormat">
+                    <option value="dmy">DD/MM/YYYY</option>
+                    <option value="mdy">MM/DD/YYYY</option>
+                    <option value="ymd">YYYY-MM-DD</option>
+                </select>
+            </div>
+
+            <div class="section-title">Wishlist behaviour</div>
+            <div class="input-row">
+                <select id="optWishlistTimeMode">
+                    <option value="months">Show months for wishlist</option>
+                    <option value="days">Show days for wishlist</option>
+                    <option value="hours">Show hours for wishlist</option>
+                </select>
+            </div>
+
+            <div class="section-title">Theme</div>
+            <div class="input-row">
+                <select id="optTheme">
+                    <option value="system">System</option>
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                </select>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn btn-primary" id="btnSaveOptions">Save options</button>
+            </div>
+        </div>
+    </section>
+</main>
+
+<nav class="nav-bar">
+    <div class="nav-btn active" data-page="page-calculator">
+        <span>🧮</span>
+        Calculator
+    </div>
+    <div class="nav-btn" data-page="page-wishlist">
+        <span>🧾</span>
+        Wishlist
+    </div>
+    <div class="nav-btn" data-page="page-savings">
+        <span>💰</span>
+        Savings
+    </div>
+    <div class="nav-btn" data-page="page-account">
+        <span>👤</span>
+        Account
+    </div>
+    <div class="nav-btn" data-page="page-options">
+        <span>⚙️</span>
+        Options
+    </div>
+</nav>
+
+<!-- Add Wishlist Modal -->
+<div id="modalWishlistBackdrop" class="modal-backdrop">
+    <div class="modal">
+        <div class="modal-title">Add wishlist item</div>
+        <div class="input-row">
+            <input id="wishlistNameInput" placeholder="Item name" />
+        </div>
+        <div class="input-row">
+            <input id="wishlistPriceInput" type="number" step="0.01" placeholder="Price" />
+        </div>
+        <div class="input-row">
+            <input id="wishlistLinkInput" placeholder="Optional link (URL)" />
+        </div>
+        <div class="input-row">
+            <textarea id="wishlistNotesInput" placeholder="Notes (optional)"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" id="wishlistCancel">Cancel</button>
+            <button class="btn btn-primary" id="wishlistSave">Save item</button>
         </div>
     </div>
+</div>
 
-    <!-- Navigation -->
-    <div class="navigation">
-        <button class="nav-button active" onclick="showPage('homePage', this)">
-            <span class="nav-icon">⌚</span>
-            Calculator
-        </button>
-        <button class="nav-button" onclick="showPage('wishlistPage', this)">
-            <span class="nav-icon">🧾</span>
-            Wishlist
-        </button>
-        <button class="nav-button" onclick="showPage('savingsPage', this)">
-            <span class="nav-icon">💰</span>
-            Savings
-        </button>
-        <button class="nav-button" onclick="showPage('accountPage', this)">
-            <span class="nav-icon">👤</span>
-            Account
-        </button>
-        <button class="nav-button" onclick="showPage('optionsPage', this)">
-            <span class="nav-icon">⚙️</span>
-            Options
-        </button>
+<!-- Add Savings Goal Modal -->
+<div id="modalGoalBackdrop" class="modal-backdrop">
+    <div class="modal">
+        <div class="modal-title">Add savings goal</div>
+        <div class="input-row">
+            <input id="goalNameInput" placeholder="Goal name" />
+        </div>
+        <div class="input-row">
+            <input id="goalTargetInput" type="number" step="0.01" placeholder="Target amount" />
+        </div>
+        <div class="input-row">
+            <input id="goalLinkInput" placeholder="Optional link (URL)" />
+        </div>
+        <div class="input-row">
+            <textarea id="goalNotesInput" placeholder="Notes (optional)"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" id="goalCancel">Cancel</button>
+            <button class="btn btn-primary" id="goalSave">Save goal</button>
+        </div>
     </div>
+</div>
 
-    <!-- Floating Add Button -->
-    <button id="addItemButton" class="button button-blue"
-            style="position: fixed; bottom: 80px; right: 20px; border-radius: 50%; width: 56px; height: 56px; font-size: 28px; padding:0;">
-        +
-    </button>
+<!-- Add Contribution Modal -->
+<div id="modalContributionBackdrop" class="modal-backdrop">
+    <div class="modal">
+        <div class="modal-title">➕ Add money to goal</div>
+        <div class="muted small" id="contributionGoalLabel">Goal: –</div>
+        <div class="input-row">
+            <input id="contributionAmountInput" type="number" step="0.01" placeholder="Amount" />
+        </div>
+        <div class="input-row">
+            <input id="contributionDateInput" type="date" />
+        </div>
+        <div class="input-row">
+            <textarea id="contributionNotesInput" placeholder="Note (optional)"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" id="contributionCancel">Cancel</button>
+            <button class="btn btn-primary" id="contributionSave">Add contribution</button>
+        </div>
+    </div>
+</div>
 
+<!-- Add Category Modal -->
+<div id="modalCategoryBackdrop" class="modal-backdrop">
+    <div class="modal">
+        <div class="modal-title">Add category</div>
+        <div class="input-row">
+            <input id="categoryNameInput" placeholder="Category name" />
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" id="categoryCancel">Cancel</button>
+            <button class="btn btn-primary" id="categorySave">Save category</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Bill Modal -->
+<div id="modalBillBackdrop" class="modal-backdrop">
+    <div class="modal">
+        <div class="modal-title">Add expenditure</div>
+        <div class="input-row">
+            <input id="billNameInput" placeholder="Name" />
+        </div>
+        <div class="input-row">
+            <input id="billAmountInput" type="number" step="0.01" placeholder="Amount" />
+        </div>
+        <div class="input-row">
+            <select id="billCategorySelect"></select>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" id="billCancel">Cancel</button>
+            <button class="btn btn-primary" id="billSave">Save expenditure</button>
+        </div>
+    </div>
 </div>
 
 <script>
-    let mode = localStorage.getItem("payMode") || "hourly";
-    let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
-    let settings = JSON.parse(localStorage.getItem("settings") || "{}");
+    const STORAGE_KEYS = {
+        settings: "mf_settings",
+        account: "mf_account",
+        wishlist: "mf_wishlist",
+        savings: "mf_savings",
+        categories: "mf_categories",
+        bills: "mf_bills"
+    };
 
-    function showPage(id, btn) {
-        document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
-        document.getElementById(id).classList.remove("hidden");
+    let settings = {
+        currencySymbol: "£",
+        currencyPosition: "prefix",
+        dateFormat: "dmy",
+        wishlistTimeMode: "months",
+        savingsSort: "percent",
+        theme: "system"
+    };
 
-        document.querySelectorAll(".nav-button").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
+    let accountState = {
+        incomeType: "hourly",
+        hourlyRate: 0,
+        hoursPerDay: 0,
+        annualSalary: 0,
+        daysPerWeek: 5,
+        weeksPerYear: 52,
+        taxRate: 0,
+        otherDeductions: 0,
+        netMonthly: 0,
+        disposableMonthly: 0,
+        disposableDaily: 0,
+        disposableHourly: 0,
+        billsTotal: 0
+    };
 
-        document.getElementById("addItemButton").style.display = (id === "wishlistPage") ? "block" : "none";
+    let wishlistItems = [];
+    let savingsGoals = [];
+    let categories = [];
+    let bills = [];
+    let currentEditGoalId = null;
+    let currentContributionGoalId = null;
+
+    function loadState() {
+        try {
+            const s = localStorage.getItem(STORAGE_KEYS.settings);
+            if (s) settings = { ...settings, ...JSON.parse(s) };
+        } catch {}
+        try {
+            const a = localStorage.getItem(STORAGE_KEYS.account);
+            if (a) accountState = { ...accountState, ...JSON.parse(a) };
+        } catch {}
+        try {
+            const w = localStorage.getItem(STORAGE_KEYS.wishlist);
+            if (w) wishlistItems = JSON.parse(w);
+        } catch {}
+        try {
+            const g = localStorage.getItem(STORAGE_KEYS.savings);
+            if (g) savingsGoals = JSON.parse(g);
+        } catch {}
+        try {
+            const c = localStorage.getItem(STORAGE_KEYS.categories);
+            if (c) categories = JSON.parse(c);
+        } catch {}
+        try {
+            const b = localStorage.getItem(STORAGE_KEYS.bills);
+            if (b) bills = JSON.parse(b);
+        } catch {}
     }
 
-    document.getElementById("accountPayMode").value = mode;
-
-    function syncModeUI() {
-        const m = mode;
-        document.getElementById("accountPayMode").value = m;
-        document.getElementById("accountHourlyInputs").classList.toggle("hidden", m !== "hourly");
-        document.getElementById("accountSalaryInputs").classList.toggle("hidden", m !== "salary");
+    function saveSettings() {
+        localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(settings));
     }
 
-    document.getElementById("accountPayMode").addEventListener("change", e => {
-        mode = e.target.value;
-        localStorage.setItem("payMode", mode);
-        syncModeUI();
-        renderDisposable();
-        renderWishlist();
-        renderGoal();
-    });
-
-    function loadAccountSettings() {
-        const hourlyWage = parseFloat(localStorage.getItem("hourlyWage")) || "";
-        const hoursPerDay = parseFloat(localStorage.getItem("hoursPerDay")) || "";
-        const yearlySalary = parseFloat(localStorage.getItem("yearlySalary")) || "";
-        const daysPerWeek = parseFloat(localStorage.getItem("daysPerWeek")) || "";
-
-        document.getElementById("accountHourlyWage").value = hourlyWage || "";
-        document.getElementById("accountHoursPerDay").value = hoursPerDay || "";
-        document.getElementById("accountYearlySalary").value = yearlySalary || "";
-        document.getElementById("accountDaysPerWeek").value = daysPerWeek || "";
+    function saveAccount() {
+        localStorage.setItem(STORAGE_KEYS.account, JSON.stringify(accountState));
     }
 
-    function loadExpenditures() {
-        const exp = JSON.parse(localStorage.getItem("expenditures") || "{}");
-        document.getElementById("expTax").value = exp.tax || "";
-        document.getElementById("expHousing").value = exp.housing || "";
-        document.getElementById("expElectric").value = exp.electric || "";
-        document.getElementById("expWater").value = exp.water || "";
-        document.getElementById("expOther").value = exp.other || "";
+    function saveWishlist() {
+        localStorage.setItem(STORAGE_KEYS.wishlist, JSON.stringify(wishlistItems));
+    }
+
+    function saveSavings() {
+        localStorage.setItem(STORAGE_KEYS.savings, JSON.stringify(savingsGoals));
+    }
+
+    function saveCategories() {
+        localStorage.setItem(STORAGE_KEYS.categories, JSON.stringify(categories));
+    }
+
+    function saveBills() {
+        localStorage.setItem(STORAGE_KEYS.bills, JSON.stringify(bills));
+    }
+
+    function applyTheme() {
+        let theme = settings.theme || "system";
+        if (theme === "system") {
+            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            document.body.classList.toggle("dark-mode", prefersDark);
+            document.body.classList.toggle("light-mode", !prefersDark);
+        } else if (theme === "dark") {
+            document.body.classList.add("dark-mode");
+            document.body.classList.remove("light-mode");
+        } else {
+            document.body.classList.add("light-mode");
+            document.body.classList.remove("dark-mode");
+        }
     }
 
     function formatCurrency(value) {
-        const currency = settings.currency || "GBP";
-        const symbols = { GBP: "£", USD: "$", EUR: "€", JPY: "¥" };
-        return `${symbols[currency]}${value.toFixed(2)}`;
-    }
-
-    function formatNumber(n) {
-        const df = settings.decimalFormat || "dot";
-        return df === "dot"
-            ? n.toLocaleString("en-GB")
-            : n.toLocaleString("de-DE");
-    }
-
-    function applySettings() {
-        const size = settings.textSize || "medium";
-        document.documentElement.style.setProperty(
-            "--text-size",
-            size === "small" ? "13px" :
-            size === "large" ? "18px" :
-            "15px"
-        );
-
-        const contrast = settings.contrast || "normal";
-        if (contrast === "high") {
-            document.documentElement.style.setProperty("--bg", "#000000");
-            document.documentElement.style.setProperty("--text", "#ffffff");
-            document.documentElement.style.setProperty("--card-bg", "#020617");
-            document.documentElement.style.setProperty("--border", "#f97316");
+        const v = Number(value || 0).toFixed(2);
+        if (settings.currencyPosition === "prefix") {
+            return `${settings.currencySymbol}${v}`;
         } else {
-            document.documentElement.style.setProperty("--bg", "#0f172a");
-            document.documentElement.style.setProperty("--text", "#e5e7eb");
-            document.documentElement.style.setProperty("--card-bg", "#020617");
-            document.documentElement.style.setProperty("--border", "#1f2937");
+            return `${v}${settings.currencySymbol}`;
         }
-
-        if (settings.unitsHoursPerDay) {
-            localStorage.setItem("hoursPerDay", settings.unitsHoursPerDay);
-        }
-        if (settings.unitsDaysPerWeek) {
-            localStorage.setItem("daysPerWeek", settings.unitsDaysPerWeek);
-        }
-        if (settings.unitsWeeksPerYear) {
-            localStorage.setItem("weeksPerYear", settings.unitsWeeksPerYear);
-        }
-
-        document.getElementById("currencySelect").value = settings.currency || "GBP";
-        document.getElementById("textSizeSelect").value = settings.textSize || "medium";
-        document.getElementById("contrastSelect").value = settings.contrast || "normal";
-        document.getElementById("dateFormatSelect").value = settings.dateFormat || "DMY";
-        document.getElementById("decimalFormatSelect").value = settings.decimalFormat || "dot";
-
-        document.getElementById("unitsHoursPerDay").value = settings.unitsHoursPerDay || localStorage.getItem("hoursPerDay") || "";
-        document.getElementById("unitsDaysPerWeek").value = settings.unitsDaysPerWeek || localStorage.getItem("daysPerWeek") || "";
-        document.getElementById("unitsWeeksPerYear").value = settings.unitsWeeksPerYear || localStorage.getItem("weeksPerYear") || "";
     }
 
-    function saveOptions() {
-        settings = {
-            currency: document.getElementById("currencySelect").value,
-            textSize: document.getElementById("textSizeSelect").value,
-            contrast: document.getElementById("contrastSelect").value,
-            dateFormat: document.getElementById("dateFormatSelect").value,
-            decimalFormat: document.getElementById("decimalFormatSelect").value,
-            unitsHoursPerDay: parseFloat(document.getElementById("unitsHoursPerDay").value),
-            unitsDaysPerWeek: parseFloat(document.getElementById("unitsDaysPerWeek").value),
-            unitsWeeksPerYear: parseFloat(document.getElementById("unitsWeeksPerYear").value)
-        };
+    function formatDate(dateStr) {
+        if (!dateStr) return "–";
+        const d = new Date(dateStr);
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const yyyy = d.getFullYear();
+        switch (settings.dateFormat) {
+            case "mdy":
+                return `${mm}/${dd}/${yyyy}`;
+            case "ymd":
+                return `${yyyy}-${mm}-${dd}`;
+            default:
+                return `${dd}/${mm}/${yyyy}`;
+        }
+    }
 
-        localStorage.setItem("settings", JSON.stringify(settings));
-        applySettings();
+    function getProgressColor(percent) {
+        const red = [220, 38, 38];
+        const yellow = [250, 204, 21];
+        const green = [34, 197, 94];
+        let start, end, t;
+        if (percent <= 0) return "rgb(31,41,55)";
+        if (percent < 50) {
+            start = red; end = yellow; t = percent / 50;
+        } else {
+            start = yellow; end = green; t = (percent - 50) / 50;
+        }
+        const r = Math.round(start[0] + (end[0] - start[0]) * t);
+        const g = Math.round(start[1] + (end[1] - start[1]) * t);
+        const b = Math.round(start[2] + (end[2] - start[2]) * t);
+        return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    function getGoalSaved(goal) {
+        return (goal.contributions || []).reduce((a, c) => a + Number(c.amount || 0), 0);
+    }
+
+    function getGoalPercent(goal) {
+        const target = Number(goal.target || 0);
+        if (target <= 0) return 0;
+        const saved = getGoalSaved(goal);
+        return Math.min(100, (saved / target) * 100);
+    }
+
+    function updateGoalCompletion(goal) {
+        const target = Number(goal.target || 0);
+        const saved = getGoalSaved(goal);
+        if (saved >= target && target > 0) {
+            if (!goal.completed) {
+                goal.completed = true;
+                goal.completedDate = new Date().toISOString();
+            }
+            if (target < 100) {
+                goal.award = "medal";
+            } else if (target > 101) {
+                goal.award = "trophy";
+            } else {
+                goal.award = "medal";
+            }
+        } else {
+            goal.completed = false;
+            goal.completedDate = null;
+            goal.award = null;
+        }
+    }
+
+    function estimateCompletion(goal) {
+        const target = Number(goal.target || 0);
+        const saved = getGoalSaved(goal);
+        const remaining = target - saved;
+        if (remaining <= 0) return "Goal completed";
+        const contributions = goal.contributions || [];
+        if (contributions.length < 2) return "Not enough data yet";
+        const sorted = [...contributions].sort((a, b) => new Date(a.date) - new Date(b.date));
+        const firstDate = new Date(sorted[0].date);
+        const lastDate = new Date(sorted[sorted.length - 1].date);
+        const monthsDiff = (lastDate.getFullYear() - firstDate.getFullYear()) * 12 +
+            (lastDate.getMonth() - firstDate.getMonth()) + 1;
+        if (monthsDiff <= 0) return "Not enough data yet";
+        const totalContrib = sorted.reduce((a, c) => a + Number(c.amount || 0), 0);
+        const avgPerMonth = totalContrib / monthsDiff;
+        if (avgPerMonth <= 0) return "Not enough data yet";
+        const monthsRemaining = remaining / avgPerMonth;
+        if (!isFinite(monthsRemaining) || monthsRemaining <= 0) return "Not enough data yet";
+        const now = new Date();
+        const completion = new Date(now.getTime());
+        completion.setMonth(completion.getMonth() + Math.round(monthsRemaining));
+        return `Estimated: ${formatDate(completion.toISOString())}`;
+    }
+
+    function showPage(id) {
+        document.querySelectorAll(".page").forEach(p => {
+            p.classList.toggle("active", p.id === id);
+        });
+        document.querySelectorAll(".nav-btn").forEach(btn => {
+            btn.classList.toggle("active", btn.dataset.page === id);
+        });
+    }
+
+    function openModal(id) {
+        document.getElementById(id).style.display = "flex";
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = "none";
+    }
+
+    function renderAccount() {
+        document.getElementById("accIncomeType").value = accountState.incomeType;
+        document.getElementById("accCurrencySymbol").value = settings.currencySymbol;
+
+        document.getElementById("accHourlyRate").value = accountState.hourlyRate || "";
+        document.getElementById("accHoursPerDay").value = accountState.hoursPerDay || "";
+        document.getElementById("accAnnualSalary").value = accountState.annualSalary || "";
+        document.getElementById("accDaysPerWeek").value = accountState.daysPerWeek || "";
+        document.getElementById("accWeeksPerYear").value = accountState.weeksPerYear || "";
+        document.getElementById("accTaxRate").value = accountState.taxRate || "";
+        document.getElementById("accOtherDeductions").value = accountState.otherDeductions || "";
+
+        document.getElementById("accHourlyInputs").style.display =
+            accountState.incomeType === "hourly" ? "block" : "none";
+        document.getElementById("accSalaryInputs").style.display =
+            accountState.incomeType === "salary" ? "block" : "none";
+
+        renderCategories();
+        renderBills();
         renderDisposable();
-        renderWishlist();
-        renderGoal();
+        renderAccountSummary();
     }
 
-    function wipeAllData() {
-        if (!confirm("Are you sure? This will delete ALL data.")) return;
-        localStorage.clear();
-        settings = {};
-        wishlist = [];
-        location.reload();
-    }
-
-    function saveAccountSettings() {
-        if (mode === "hourly") {
-            const wage = parseFloat(document.getElementById("accountHourlyWage").value);
-            const hours = parseFloat(document.getElementById("accountHoursPerDay").value);
-            if (!wage || !hours) return;
-            localStorage.setItem("hourlyWage", wage);
-            localStorage.setItem("hoursPerDay", hours);
-        } else {
-            const salary = parseFloat(document.getElementById("accountYearlySalary").value);
-            const days = parseFloat(document.getElementById("accountDaysPerWeek").value);
-            if (!salary || !days) return;
-            localStorage.setItem("yearlySalary", salary);
-            localStorage.setItem("daysPerWeek", days);
-        }
-
-        const exp = {
-            tax: parseFloat(document.getElementById("expTax").value) || 0,
-            housing: parseFloat(document.getElementById("expHousing").value) || 0,
-            electric: parseFloat(document.getElementById("expElectric").value) || 0,
-            water: parseFloat(document.getElementById("expWater").value) || 0,
-            other: parseFloat(document.getElementById("expOther").value) || 0
-        };
-        localStorage.setItem("expenditures", JSON.stringify(exp));
-
-        document.getElementById("savedMessage").classList.remove("hidden");
-        setTimeout(() => document.getElementById("savedMessage").classList.add("hidden"), 2000);
-
-        renderDisposable();
-        renderGoal();
-        renderWishlist();
-    }
-
-    function getDisposableIncome() {
-        const exp = JSON.parse(localStorage.getItem("expenditures") || "{}");
-        const totalExpenses =
-            (exp.tax || 0) +
-            (exp.housing || 0) +
-            (exp.electric || 0) +
-            (exp.water || 0) +
-            (exp.other || 0);
-
-        let monthlyIncome;
-        if (mode === "hourly") {
-            const wage = parseFloat(localStorage.getItem("hourlyWage")) || 15;
-            const hoursPerDay = parseFloat(localStorage.getItem("hoursPerDay")) || 8;
-            monthlyIncome = wage * hoursPerDay * 22;
-        } else {
-            const salary = parseFloat(localStorage.getItem("yearlySalary")) || 30000;
-            monthlyIncome = salary / 12;
-        }
-        return monthlyIncome - totalExpenses;
-    }
-
-    function renderDisposable() {
-        const disposable = getDisposableIncome();
-        if (!isFinite(disposable)) return;
-
-        document.getElementById("disposableResult").classList.remove("hidden");
-        document.getElementById("disposableAmount").innerText = `${formatCurrency(disposable)} / month`;
-        document.getElementById("disposableDetails").innerText =
-            disposable <= 0
-                ? "Your expenses are equal to or higher than your income."
-                : "This is what’s left after tax, housing, and bills.";
-    }
-
-    function calculateCostRaw(price) {
-        let hours;
-        if (mode === "hourly") {
-            const wage = parseFloat(localStorage.getItem("hourlyWage")) || 15;
-            const hoursPerDay = parseFloat(localStorage.getItem("hoursPerDay")) || 8;
-            hours = price / wage;
-            return { hours, days: hours / hoursPerDay };
-        } else {
-            const salary = parseFloat(localStorage.getItem("yearlySalary")) || 30000;
-            const daysPerWeek = parseFloat(localStorage.getItem("daysPerWeek")) || 5;
-            const dailyPay = salary / (daysPerWeek * 52);
-            const hourlyPay = dailyPay / 8;
-            hours = price / hourlyPay;
-            return { hours, days: hours / 8 };
-        }
-    }
-
-    function calculateCost() {
-        const price = parseFloat(document.getElementById("itemPriceInput").value);
-        if (!price || price <= 0) return;
-
-        const { hours, days } = calculateCostRaw(price);
-        const disposable = getDisposableIncome();
-        const months = disposable > 0 ? price / disposable : Infinity;
-        const percent = disposable > 0 ? (price / disposable) * 100 : Infinity;
-
-        document.getElementById("calcResult").classList.remove("hidden");
-        document.getElementById("hoursResult").innerText = `${hours.toFixed(1)} hours of work`;
-        document.getElementById("daysResult").innerText =
-            disposable > 0
-                ? `${days.toFixed(1)} days • ${months.toFixed(2)} months of disposable income • ${percent.toFixed(1)}% of monthly disposable income`
-                : `${days.toFixed(1)} days • disposable income not yet set or negative`;
-    }
-
-    function renderWishlist() {
-        const container = document.getElementById("wishlistPage");
-        const empty = container.querySelector(".empty-wishlist");
-
-        container.querySelectorAll(".wishlist-item").forEach(el => el.remove());
-
-        if (!wishlist.length) {
+    function renderCategories() {
+        const list = document.getElementById("categoryList");
+        const empty = document.getElementById("categoryEmpty");
+        list.innerHTML = "";
+        if (!categories.length) {
             empty.style.display = "block";
             return;
         }
         empty.style.display = "none";
-
-        const disposable = getDisposableIncome();
-
-        wishlist.forEach(item => {
-            const div = document.createElement("div");
-            div.className = "wishlist-item";
-
-            let months = disposable > 0 ? item.price / disposable : null;
-            let percent = disposable > 0 ? (item.price / disposable) * 100 : null;
-
-            div.innerHTML = `
-                <div>
-                    <strong>${item.name}</strong><br>
-                    ${formatCurrency(item.price)}<br>
-                    <small>${item.hours.toFixed(1)} hours • ${item.days.toFixed(1)} days</small><br>
-                    <small>${
-                        disposable > 0
-                            ? `${months.toFixed(2)} months disposable • ${percent.toFixed(1)}% of monthly disposable`
-                            : `Set your account and expenditures to see disposable impact`
-                    }</small>
-                </div>
-                <button onclick="removeItem('${item.id}')" style="background:none;border:none;font-size:22px;color:#dc2626;">×</button>
-            `;
-            container.appendChild(div);
+        categories.forEach(cat => {
+            const row = document.createElement("div");
+            row.className = "bubble";
+            const main = document.createElement("div");
+            main.className = "bubble-main";
+            const t = document.createElement("div");
+            t.className = "bubble-title";
+            t.textContent = cat.name;
+            const s = document.createElement("div");
+            s.className = "bubble-sub";
+            const usedCount = bills.filter(b => b.categoryId === cat.id).length;
+            s.textContent = usedCount ? `${usedCount} bills` : "Unused";
+            main.appendChild(t);
+            main.appendChild(s);
+            const right = document.createElement("div");
+            right.className = "bubble-right";
+            const btnRename = document.createElement("button");
+            btnRename.className = "btn btn-ghost small";
+            btnRename.textContent = "Rename";
+            btnRename.onclick = () => {
+                const newName = prompt("New category name:", cat.name);
+                if (!newName) return;
+                cat.name = newName.trim();
+                saveCategories();
+                renderCategories();
+                renderBills();
+            };
+            const btnDelete = document.createElement("button");
+            btnDelete.className = "btn btn-danger small";
+            btnDelete.textContent = "Delete";
+            btnDelete.onclick = () => {
+                const used = bills.some(b => b.categoryId === cat.id);
+                if (used) {
+                    alert("Cannot delete a category that is used by bills.");
+                    return;
+                }
+                categories = categories.filter(c => c.id !== cat.id);
+                saveCategories();
+                renderCategories();
+                renderBills();
+            };
+            right.appendChild(btnRename);
+            right.appendChild(btnDelete);
+            row.appendChild(main);
+            row.appendChild(right);
+            list.appendChild(row);
         });
     }
 
-    function openAddItemModal() {
-        document.getElementById("addItemModal").classList.remove("hidden");
+    function renderBills() {
+        const list = document.getElementById("billList");
+        const empty = document.getElementById("billEmpty");
+        list.innerHTML = "";
+        if (!bills.length) {
+            empty.style.display = "block";
+        } else {
+            empty.style.display = "none";
+        }
+        bills.forEach(bill => {
+            const row = document.createElement("div");
+            row.className = "bubble";
+            const main = document.createElement("div");
+            main.className = "bubble-main";
+            const t = document.createElement("div");
+            t.className = "bubble-title";
+            t.textContent = bill.name || "Unnamed bill";
+            const s = document.createElement("div");
+            s.className = "bubble-sub";
+            const cat = categories.find(c => c.id === bill.categoryId);
+            s.textContent = `${formatCurrency(bill.amount || 0)} • ${cat ? cat.name : "No category"}`;
+            main.appendChild(t);
+            main.appendChild(s);
+            const right = document.createElement("div");
+            right.className = "bubble-right";
+            const btnEdit = document.createElement("button");
+            btnEdit.className = "btn btn-ghost small";
+            btnEdit.textContent = "Edit";
+            btnEdit.onclick = () => {
+                document.getElementById("billNameInput").value = bill.name || "";
+                document.getElementById("billAmountInput").value = bill.amount || "";
+                populateBillCategorySelect(bill.categoryId);
+                openModal("modalBillBackdrop");
+                document.getElementById("billSave").onclick = () => {
+                    const name = document.getElementById("billNameInput").value.trim();
+                    const amount = Number(document.getElementById("billAmountInput").value || 0);
+                    const catId = document.getElementById("billCategorySelect").value;
+                    if (!name || amount <= 0 || !catId) {
+                        alert("Please enter name, amount, and category.");
+                        return;
+                    }
+                    bill.name = name;
+                    bill.amount = amount;
+                    bill.categoryId = catId;
+                    saveBills();
+                    closeModal("modalBillBackdrop");
+                    recalcDisposable();
+                    renderBills();
+                    renderDisposable();
+                    renderWishlist();
+                    renderSavings();
+                };
+            };
+            const btnDelete = document.createElement("button");
+            btnDelete.className = "btn btn-danger small";
+            btnDelete.textContent = "Delete";
+            btnDelete.onclick = () => {
+                bills = bills.filter(b => b.id !== bill.id);
+                saveBills();
+                recalcDisposable();
+                renderBills();
+                renderDisposable();
+                renderWishlist();
+                renderSavings();
+            };
+            right.appendChild(btnEdit);
+            right.appendChild(btnDelete);
+            row.appendChild(main);
+            row.appendChild(right);
+            list.appendChild(row);
+        });
     }
 
-    function closeAddItemModal() {
-        document.getElementById("addItemModal").classList.add("hidden");
-        document.getElementById("newItemName").value = "";
-        document.getElementById("newItemPrice").value = "";
+    function recalcDisposable() {
+        let grossMonthly = 0;
+        if (accountState.incomeType === "hourly") {
+            const rate = Number(accountState.hourlyRate || 0);
+            const hoursPerDay = Number(accountState.hoursPerDay || 0);
+            const daysPerWeek = Number(accountState.daysPerWeek || 0);
+            const weeksPerYear = Number(accountState.weeksPerYear || 0);
+            const annual = rate * hoursPerDay * daysPerWeek * weeksPerYear;
+            grossMonthly = annual / 12;
+        } else {
+            const salary = Number(accountState.annualSalary || 0);
+            grossMonthly = salary / 12;
+        }
+        const taxRate = Number(accountState.taxRate || 0);
+        const otherDeductions = Number(accountState.otherDeductions || 0);
+        const taxAmount = grossMonthly * (taxRate / 100);
+        const netMonthly = grossMonthly - taxAmount - otherDeductions;
+        const billsTotal = bills.reduce((a, b) => a + Number(b.amount || 0), 0);
+        const disposableMonthly = netMonthly - billsTotal;
+        const disposableDaily = disposableMonthly / 30;
+        const disposableHourly = disposableDaily / 24;
+        accountState.netMonthly = netMonthly;
+        accountState.billsTotal = billsTotal;
+        accountState.disposableMonthly = Math.max(0, disposableMonthly);
+        accountState.disposableDaily = Math.max(0, disposableDaily);
+        accountState.disposableHourly = Math.max(0, disposableHourly);
+        saveAccount();
     }
 
-    document.getElementById("addItemButton").onclick = openAddItemModal;
+    function renderDisposable() {
+        document.getElementById("accNetMonthlyLabel").textContent =
+            accountState.netMonthly ? formatCurrency(accountState.netMonthly) : "–";
+        document.getElementById("accBillsTotalLabel").textContent =
+            accountState.billsTotal ? formatCurrency(accountState.billsTotal) : "–";
+        document.getElementById("accDisposableMonthlyLabel").textContent =
+            accountState.disposableMonthly ? formatCurrency(accountState.disposableMonthly) : "–";
+        document.getElementById("accDisposableDailyLabel").textContent =
+            accountState.disposableDaily ? formatCurrency(accountState.disposableDaily) : "–";
+        document.getElementById("accDisposableHourlyLabel").textContent =
+            accountState.disposableHourly ? formatCurrency(accountState.disposableHourly) : "–";
+    }
 
-    function saveNewItem() {
-        const name = document.getElementById("newItemName").value.trim();
-        const price = parseFloat(document.getElementById("newItemPrice").value);
-        if (!name || !price || price <= 0) return;
+    function renderWishlist() {
+        const listEl = document.getElementById("wishlistList");
+        const emptyEl = document.getElementById("wishlistEmpty");
+        listEl.innerHTML = "";
+        if (accountState.disposableMonthly > 0) {
+            const d = accountState.disposableMonthly;
+            document.getElementById("wishlistDisposableInfo").textContent =
+                `Disposable: ${formatCurrency(d)} / month`;
+        } else {
+            document.getElementById("wishlistDisposableInfo").textContent =
+                "Disposable income not set yet.";
+        }
+        if (!wishlistItems.length) {
+            emptyEl.style.display = "block";
+            return;
+        }
+        emptyEl.style.display = "none";
+        wishlistItems.forEach(item => {
+            const bubble = document.createElement("div");
+            bubble.className = "bubble";
+            const main = document.createElement("div");
+            main.className = "bubble-main";
+            const title = document.createElement("div");
+            title.className = "bubble-title";
+            title.textContent = item.name || "Unnamed item";
+            const sub = document.createElement("div");
+            sub.className = "bubble-sub";
+            const price = formatCurrency(item.price || 0);
+            let timeText = "";
+            if (accountState.disposableMonthly > 0) {
+                const months = (item.price || 0) / accountState.disposableMonthly;
+                const days = months * 30;
+                const hours = days * 24;
+                switch (settings.wishlistTimeMode) {
+                    case "days":
+                        timeText = `${days.toFixed(1)} days of disposable income`;
+                        break;
+                    case "hours":
+                        timeText = `${hours.toFixed(1)} hours of disposable income`;
+                        break;
+                    default:
+                        timeText = `${months.toFixed(1)} months of disposable income`;
+                }
+            } else {
+                timeText = "Set disposable income to see time estimate";
+            }
+            sub.textContent = `${price} • ${timeText}`;
+            main.appendChild(title);
+            main.appendChild(sub);
+            const right = document.createElement("div");
+            right.className = "bubble-right";
+            if (item.link) {
+                const a = document.createElement("a");
+                a.href = item.link;
+                a.target = "_blank";
+                a.rel = "noopener noreferrer";
+                a.className = "link";
+                a.textContent = "Open link";
+                right.appendChild(a);
+            }
+            const btnRow = document.createElement("div");
+            btnRow.className = "btn-row";
+            btnRow.style.marginTop = "4px";
+            const btnToGoal = document.createElement("button");
+            btnToGoal.className = "btn btn-ghost small";
+            btnToGoal.textContent = "Set as savings goal";
+            btnToGoal.onclick = () => {
+                document.getElementById("goalNameInput").value = item.name || "";
+                document.getElementById("goalTargetInput").value = item.price || "";
+                document.getElementById("goalLinkInput").value = item.link || "";
+                document.getElementById("goalNotesInput").value = item.notes || "";
+                openModal("modalGoalBackdrop");
+            };
+            btnRow.appendChild(btnToGoal);
+            right.appendChild(btnRow);
+            bubble.appendChild(main);
+            bubble.appendChild(right);
+            listEl.appendChild(bubble);
+        });
+    }
 
-        const { hours, days } = calculateCostRaw(price);
-        const item = {
-            id: Date.now().toString(),
-            name,
-            price,
-            hours,
-            days
+    function sortGoals(goals) {
+        const sort = settings.savingsSort || "percent";
+        if (sort === "manual") return goals;
+        const copy = [...goals];
+        switch (sort) {
+            case "percent":
+                copy.sort((a, b) => getGoalPercent(b) - getGoalPercent(a));
+                break;
+            case "date":
+                copy.sort((a, b) => new Date(b.created || 0) - new Date(a.created || 0));
+                break;
+            case "name":
+                copy.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+                break;
+            case "target":
+                copy.sort((a, b) => Number(a.target || 0) - Number(b.target || 0));
+                break;
+        }
+        return copy;
+    }
+
+    function renderSavings() {
+        const activeList = document.getElementById("savingsActiveList");
+        const completedList = document.getElementById("savingsCompletedList");
+        const activeEmpty = document.getElementById("savingsActiveEmpty");
+        const trophyTitle = document.getElementById("trophySectionTitle");
+        activeList.innerHTML = "";
+        completedList.innerHTML = "";
+        document.getElementById("savingsSort").value = settings.savingsSort || "percent";
+        if (accountState.disposableMonthly > 0) {
+            const d = accountState.disposableMonthly;
+            document.getElementById("savingsDisposableInfo").textContent =
+                `Disposable: ${formatCurrency(d)} / month`;
+        } else {
+            document.getElementById("savingsDisposableInfo").textContent =
+                "Disposable income not set yet.";
+        }
+        if (!savingsGoals.length) {
+            activeEmpty.style.display = "block";
+            trophyTitle.style.display = "none";
+            return;
+        }
+        activeEmpty.style.display = "none";
+        const sorted = sortGoals(savingsGoals);
+        const activeGoals = sorted.filter(g => !g.completed);
+        const completedGoals = sorted.filter(g => g.completed);
+        trophyTitle.style.display = completedGoals.length ? "block" : "none";
+        activeGoals.forEach(goal => {
+            const bubble = document.createElement("div");
+            bubble.className = "bubble";
+            const main = document.createElement("div");
+            main.className = "bubble-main";
+            const title = document.createElement("div");
+            title.className = "bubble-title";
+            title.textContent = goal.name || "Unnamed goal";
+            const sub = document.createElement("div");
+            sub.className = "bubble-sub";
+            const saved = getGoalSaved(goal);
+            const percent = getGoalPercent(goal);
+            sub.textContent = `${formatCurrency(saved)} saved • ${percent.toFixed(1)}%`;
+            main.appendChild(title);
+            main.appendChild(sub);
+            const right = document.createElement("div");
+            right.className = "bubble-right";
+            const badge = document.createElement("span");
+            badge.className = "badge badge-warning";
+            badge.textContent = "Active";
+            right.appendChild(badge);
+            bubble.appendChild(main);
+            bubble.appendChild(right);
+            bubble.onclick = () => openExpandedGoal(goal.id);
+            activeList.appendChild(bubble);
+        });
+        completedGoals.forEach(goal => {
+            const bubble = document.createElement("div");
+            bubble.className = "bubble";
+            const main = document.createElement("div");
+            main.className = "bubble-main";
+            const title = document.createElement("div");
+            title.className = "bubble-title";
+            const icon = goal.award === "trophy" ? "🏆 " : "🥇 ";
+            title.textContent = `${icon}${goal.name || "Completed goal"}`;
+            const sub = document.createElement("div");
+            sub.className = "bubble-sub";
+            const saved = getGoalSaved(goal);
+            const percent = getGoalPercent(goal);
+            sub.textContent = `${formatCurrency(saved)} • ${percent.toFixed(1)}% • Completed on ${formatDate(goal.completedDate)}`;
+            main.appendChild(title);
+            main.appendChild(sub);
+            const right = document.createElement("div");
+            right.className = "bubble-right";
+            const badge = document.createElement("span");
+            badge.className = "badge badge-success";
+            badge.textContent = goal.award === "trophy" ? "Trophy" : "Medal";
+            right.appendChild(badge);
+            bubble.appendChild(main);
+            bubble.appendChild(right);
+            bubble.onclick = () => openExpandedGoal(goal.id);
+            completedList.appendChild(bubble);
+        });
+    }
+
+    function openExpandedGoal(goalId) {
+        const goal = savingsGoals.find(g => g.id === goalId);
+        if (!goal) return;
+        const card = document.createElement("div");
+        card.className = "card";
+        const header = document.createElement("div");
+        header.className = "card-header";
+        const left = document.createElement("div");
+        const title = document.createElement("div");
+        title.className = "card-title";
+        const icon = goal.completed ? (goal.award === "trophy" ? "🏆 " : "🥇 ") : "";
+        title.textContent = `${icon}${goal.name || "Unnamed goal"}`;
+        const subtitle = document.createElement("div");
+        subtitle.className = "card-subtitle";
+        subtitle.textContent = `Target: ${formatCurrency(goal.target || 0)}`;
+        left.appendChild(title);
+        left.appendChild(subtitle);
+        const right = document.createElement("div");
+        const btnClose = document.createElement("button");
+        btnClose.className = "btn btn-ghost small";
+        btnClose.textContent = "Close";
+        btnClose.onclick = () => renderSavings();
+        right.appendChild(btnClose);
+        header.appendChild(left);
+        header.appendChild(right);
+        card.appendChild(header);
+        const saved = getGoalSaved(goal);
+        const percent = getGoalPercent(goal);
+        const infoRow = document.createElement("div");
+        infoRow.className = "progress-label-row";
+        const leftInfo = document.createElement("span");
+        leftInfo.textContent = `Saved: ${formatCurrency(saved)} (${percent.toFixed(1)}%)`;
+        const rightInfo = document.createElement("span");
+        rightInfo.textContent = estimateCompletion(goal);
+        infoRow.appendChild(leftInfo);
+        infoRow.appendChild(rightInfo);
+        card.appendChild(infoRow);
+        const barWrap = document.createElement("div");
+        barWrap.className = "progress-bar-wrap";
+        const barInner = document.createElement("div");
+        barInner.className = "progress-bar-inner";
+        barInner.style.width = `${percent}%`;
+        barInner.style.background = getProgressColor(percent);
+        if (percent >= 100) {
+            barInner.style.boxShadow = "0 0 10px rgba(34,197,94,0.7)";
+        }
+        barWrap.appendChild(barInner);
+        card.appendChild(barWrap);
+        const labelRow = document.createElement("div");
+        labelRow.className = "progress-label-row";
+        const l = document.createElement("span");
+        l.textContent = "Progress";
+        const r = document.createElement("span");
+        r.textContent = `${percent.toFixed(1)}%`;
+        labelRow.appendChild(l);
+        labelRow.appendChild(r);
+        card.appendChild(labelRow);
+        if (goal.completed) {
+            const awardBanner = document.createElement("div");
+            awardBanner.className = "badge badge-success";
+            awardBanner.style.marginTop = "6px";
+            const iconAward = goal.award === "trophy" ? "🏆" : "🥇";
+            awardBanner.textContent = `${iconAward} Goal completed on ${formatDate(goal.completedDate)}`;
+            card.appendChild(awardBanner);
+        }
+        const divider = document.createElement("div");
+        divider.className = "divider";
+        card.appendChild(divider);
+        const contribTitle = document.createElement("div");
+        contribTitle.className = "section-title";
+        contribTitle.textContent = "Contributions";
+        card.appendChild(contribTitle);
+        const contribList = document.createElement("div");
+        contribList.className = "bubble-list";
+        if (!goal.contributions || !goal.contributions.length) {
+            const empty = document.createElement("div");
+            empty.className = "muted small";
+            empty.textContent = "No contributions yet.";
+            contribList.appendChild(empty);
+        } else {
+            goal.contributions
+                .slice()
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .forEach(c => {
+                    const row = document.createElement("div");
+                    row.className = "bubble";
+                    const main = document.createElement("div");
+                    main.className = "bubble-main";
+                    const t = document.createElement("div");
+                    t.className = "bubble-title";
+                    t.textContent = formatCurrency(c.amount || 0);
+                    const s = document.createElement("div");
+                    s.className = "bubble-sub";
+                    s.textContent = `${formatDate(c.date)}${c.notes ? " • " + c.notes : ""}`;
+                    main.appendChild(t);
+                    main.appendChild(s);
+                    row.appendChild(main);
+                    contribList.appendChild(row);
+                });
+        }
+        card.appendChild(contribList);
+        const btnRow = document.createElement("div");
+        btnRow.className = "btn-row";
+        const btnAdd = document.createElement("button");
+        btnAdd.className = "btn btn-primary";
+        btnAdd.textContent = "➕ Add money to goal";
+        btnAdd.onclick = () => {
+            currentContributionGoalId = goal.id;
+            document.getElementById("contributionGoalLabel").textContent =
+                `Goal: ${goal.name || "Unnamed goal"}`;
+            document.getElementById("contributionAmountInput").value = "";
+            const today = new Date();
+            document.getElementById("contributionDateInput").value =
+                today.toISOString().slice(0, 10);
+            document.getElementById("contributionNotesInput").value = "";
+            openModal("modalContributionBackdrop");
         };
-
-        wishlist.push(item);
-        localStorage.setItem("wishlist", JSON.stringify(wishlist));
-
-        closeAddItemModal();
-        renderWishlist();
+        const btnEdit = document.createElement("button");
+        btnEdit.className = "btn btn-ghost";
+        btnEdit.textContent = "✏️ Edit goal";
+        btnEdit.onclick = () => {
+            currentEditGoalId = goal.id;
+            openEditGoalPage();
+        };
+        btnRow.appendChild(btnAdd);
+        btnRow.appendChild(btnEdit);
+        card.appendChild(btnRow);
+        const savingsPage = document.getElementById("page-savings");
+        savingsPage.innerHTML = "";
+        savingsPage.appendChild(card);
     }
 
-    function removeItem(id) {
-        wishlist = wishlist.filter(item => item.id !== id);
-        localStorage.setItem("wishlist", JSON.stringify(wishlist));
-        renderWishlist();
+    function openEditGoalPage() {
+        const goal = savingsGoals.find(g => g.id === currentEditGoalId);
+        if (!goal) return;
+        showPage("page-edit-goal");
+        document.getElementById("editGoalNameLabel").textContent =
+            `Goal: ${goal.name || "Unnamed goal"}`;
+        document.getElementById("editGoalName").value = goal.name || "";
+        document.getElementById("editGoalTarget").value = goal.target || "";
+        document.getElementById("editGoalLink").value = goal.link || "";
+        document.getElementById("editGoalNotes").value = goal.notes || "";
+        const list = document.getElementById("editGoalContributions");
+        const empty = document.getElementById("editGoalContributionsEmpty");
+        list.innerHTML = "";
+        if (!goal.contributions || !goal.contributions.length) {
+            empty.style.display = "block";
+        } else {
+            empty.style.display = "none";
+            goal.contributions
+                .slice()
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .forEach(c => {
+                    const row = document.createElement("div");
+                    row.className = "bubble";
+                    const main = document.createElement("div");
+                    main.className = "bubble-main";
+                    const t = document.createElement("div");
+                    t.className = "bubble-title";
+                    t.textContent = formatCurrency(c.amount || 0);
+                    const s = document.createElement("div");
+                    s.className = "bubble-sub";
+                    s.textContent = `${formatDate(c.date)}${c.notes ? " • " + c.notes : ""}`;
+                    main.appendChild(t);
+                    main.appendChild(s);
+                    const right = document.createElement("div");
+                    right.className = "bubble-right";
+                    const btnRemove = document.createElement("button");
+                    btnRemove.className = "btn btn-danger small";
+                    btnRemove.textContent = "Remove";
+                    btnRemove.onclick = () => {
+                        const index = goal.contributions.indexOf(c);
+                        if (index >= 0) {
+                            goal.contributions.splice(index, 1);
+                            updateGoalCompletion(goal);
+                            saveSavings();
+                            openEditGoalPage();
+                        }
+                    };
+                    right.appendChild(btnRemove);
+                    row.appendChild(main);
+                    row.appendChild(right);
+                    list.appendChild(row);
+                });
+        }
     }
 
-    function saveGoal() {
-        const name = document.getElementById("goalName").value.trim();
-        const target = parseFloat(document.getElementById("goalTarget").value);
-        const saved = parseFloat(document.getElementById("goalSaved").value);
-        if (!name || !target || target <= 0 || saved < 0) return;
-
-        const goal = { name, target, saved };
-        localStorage.setItem("savingsGoal", JSON.stringify(goal));
-        renderGoal();
+    function renderAccountSummary() {
+        const el = document.getElementById("accountSummary");
+        const wishlistCount = wishlistItems.length;
+        const goalsCount = savingsGoals.length;
+        const completedCount = savingsGoals.filter(g => g.completed).length;
+        const billsCount = bills.length;
+        el.textContent =
+            `Wishlist items: ${wishlistCount} • Savings goals: ${goalsCount} (${completedCount} completed) • Bills: ${billsCount}`;
     }
 
-    function renderGoal() {
-        const goal = JSON.parse(localStorage.getItem("savingsGoal") || "{}");
-        if (!goal.name) return;
-
-        const percent = Math.min((goal.saved / goal.target) * 100, 100);
-        const disposable = getDisposableIncome();
-        const savedMonths = disposable > 0 ? goal.saved / disposable : null;
-        const remainingMonths = disposable > 0 ? (goal.target - goal.saved) / disposable : null;
-
-        document.getElementById("goalPercent").innerText = `${percent.toFixed(1)}% complete`;
-        document.getElementById("goalTime").innerText =
-            disposable > 0
-                ? `${savedMonths.toFixed(2)} months saved • ${remainingMonths.toFixed(2)} months remaining`
-                : `Set your account and expenditures to see time equivalents`;
-
-        document.getElementById("goalBar").style.width = `${percent}%`;
-        document.getElementById("goalProgress").classList.remove("hidden");
-
-        document.getElementById("goalName").value = goal.name;
-        document.getElementById("goalTarget").value = goal.target;
-        document.getElementById("goalSaved").value = goal.saved;
+    function renderOptions() {
+        document.getElementById("optCurrencyPosition").value = settings.currencyPosition;
+        document.getElementById("optDateFormat").value = settings.dateFormat;
+        document.getElementById("optWishlistTimeMode").value = settings.wishlistTimeMode;
+        document.getElementById("optTheme").value = settings.theme || "system";
     }
 
-    syncModeUI();
-    applySettings();
-    loadAccountSettings();
-    loadExpenditures();
-    renderDisposable();
-    renderWishlist();
-    renderGoal();
+    function populateBillCategorySelect(selectedId) {
+        const select = document.getElementById("billCategorySelect");
+        select.innerHTML = "";
+        if (!categories.length) {
+            const opt = document.createElement("option");
+            opt.value = "";
+            opt.textContent = "No categories yet";
+            select.appendChild(opt);
+            return;
+        }
+        categories.forEach(cat => {
+            const opt = document.createElement("option");
+            opt.value = cat.id;
+            opt.textContent = cat.name;
+            select.appendChild(opt);
+        });
+        if (selectedId) {
+            select.value = selectedId;
+        }
+    }
+
+    function initNav() {
+        document.querySelectorAll(".nav-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const page = btn.dataset.page;
+                showPage(page);
+                if (page === "page-savings") renderSavings();
+                if (page === "page-wishlist") renderWishlist();
+                if (page === "page-account") renderAccount();
+                if (page === "page-options") renderOptions();
+            });
+        });
+    }
+
+    function initCalculatorEvents() {
+        document.getElementById("btnCalcImpact").addEventListener("click", () => {
+            const cost = Number(document.getElementById("calcItemCost").value || 0);
+            if (cost <= 0) {
+                document.getElementById("impactMessage").textContent =
+                    "Enter a positive item cost to see the impact.";
+                document.getElementById("impactHoursLabel").textContent = "–";
+                document.getElementById("impactDaysLabel").textContent = "–";
+                document.getElementById("impactMonthsLabel").textContent = "–";
+                document.getElementById("impactPercentLabel").textContent = "–";
+                return;
+            }
+            if (accountState.disposableMonthly <= 0 || accountState.disposableHourly <= 0) {
+                document.getElementById("impactMessage").textContent =
+                    "Set up your income and bills in the Account page first.";
+                document.getElementById("impactHoursLabel").textContent = "–";
+                document.getElementById("impactDaysLabel").textContent = "–";
+                document.getElementById("impactMonthsLabel").textContent = "–";
+                document.getElementById("impactPercentLabel").textContent = "–";
+                return;
+            }
+            const hours = cost / accountState.disposableHourly;
+            const days = hours / (accountState.hoursPerDay || 1);
+            const months = cost / accountState.disposableMonthly;
+            const percent = (cost / accountState.disposableMonthly) * 100;
+            document.getElementById("impactHoursLabel").textContent = hours.toFixed(1);
+            document.getElementById("impactDaysLabel").textContent = days.toFixed(2);
+            document.getElementById("impactMonthsLabel").textContent = months.toFixed(2);
+            document.getElementById("impactPercentLabel").textContent = percent.toFixed(1) + "%";
+            document.getElementById("impactMessage").textContent =
+                percent > 50
+                    ? "This is a big chunk of your disposable income. Is it really worth it to you?"
+                    : "This is a manageable portion of your disposable income. Does it feel worth it?";
+        });
+
+        document.getElementById("btnCalcImpactReset").addEventListener("click", () => {
+            document.getElementById("calcItemCost").value = "";
+            document.getElementById("impactHoursLabel").textContent = "–";
+            document.getElementById("impactDaysLabel").textContent = "–";
+            document.getElementById("impactMonthsLabel").textContent = "–";
+            document.getElementById("impactPercentLabel").textContent = "–";
+            document.getElementById("impactMessage").textContent =
+                "Enter an item cost to see if it feels worth it to you.";
+        });
+    }
+
+    function initWishlistEvents() {
+        document.getElementById("btnAddWishlist").addEventListener("click", () => {
+            document.getElementById("wishlistNameInput").value = "";
+            document.getElementById("wishlistPriceInput").value = "";
+            document.getElementById("wishlistLinkInput").value = "";
+            document.getElementById("wishlistNotesInput").value = "";
+            openModal("modalWishlistBackdrop");
+        });
+
+        document.getElementById("wishlistCancel").addEventListener("click", () => {
+            closeModal("modalWishlistBackdrop");
+        });
+
+        document.getElementById("wishlistSave").addEventListener("click", () => {
+            const name = document.getElementById("wishlistNameInput").value.trim();
+            const price = Number(document.getElementById("wishlistPriceInput").value || 0);
+            const link = document.getElementById("wishlistLinkInput").value.trim();
+            const notes = document.getElementById("wishlistNotesInput").value.trim();
+            if (!name || price <= 0) {
+                alert("Please enter a name and a positive price.");
+                return;
+            }
+            wishlistItems.push({
+                id: crypto.randomUUID(),
+                name,
+                price,
+                link: link || null,
+                notes: notes || null,
+                created: new Date().toISOString()
+            });
+            saveWishlist();
+            closeModal("modalWishlistBackdrop");
+            renderWishlist();
+        });
+    }
+
+    function initSavingsEvents() {
+        document.getElementById("btnAddGoal").addEventListener("click", () => {
+            document.getElementById("goalNameInput").value = "";
+            document.getElementById("goalTargetInput").value = "";
+            document.getElementById("goalLinkInput").value = "";
+            document.getElementById("goalNotesInput").value = "";
+            openModal("modalGoalBackdrop");
+        });
+
+        document.getElementById("goalCancel").addEventListener("click", () => {
+            closeModal("modalGoalBackdrop");
+        });
+
+        document.getElementById("goalSave").addEventListener("click", () => {
+            const name = document.getElementById("goalNameInput").value.trim();
+            const target = Number(document.getElementById("goalTargetInput").value || 0);
+            const link = document.getElementById("goalLinkInput").value.trim();
+            const notes = document.getElementById("goalNotesInput").value.trim();
+            if (!name || target <= 0) {
+                alert("Please enter a name and a positive target.");
+                return;
+            }
+            const goal = {
+                id: crypto.randomUUID(),
+                name,
+                target,
+                link: link || null,
+                notes: notes || null,
+                contributions: [],
+                created: new Date().toISOString(),
+                completed: false,
+                completedDate: null,
+                award: null
+            };
+            savingsGoals.push(goal);
+            saveSavings();
+            closeModal("modalGoalBackdrop");
+            renderSavings();
+        });
+
+        document.getElementById("savingsSort").addEventListener("change", e => {
+            settings.savingsSort = e.target.value;
+            saveSettings();
+            renderSavings();
+        });
+
+        document.getElementById("contributionCancel").addEventListener("click", () => {
+            closeModal("modalContributionBackdrop");
+        });
+
+        document.getElementById("contributionSave").addEventListener("click", () => {
+            if (!currentContributionGoalId) return;
+            const goal = savingsGoals.find(g => g.id === currentContributionGoalId);
+            if (!goal) return;
+            const amount = Number(document.getElementById("contributionAmountInput").value || 0);
+            const dateStr = document.getElementById("contributionDateInput").value;
+            const notes = document.getElementById("contributionNotesInput").value.trim();
+            if (amount <= 0 || !dateStr) {
+                alert("Please enter a positive amount and a date.");
+                return;
+            }
+            goal.contributions = goal.contributions || [];
+            goal.contributions.push({
+                amount,
+                date: new Date(dateStr).toISOString(),
+                notes: notes || null
+            });
+            updateGoalCompletion(goal);
+            saveSavings();
+            closeModal("modalContributionBackdrop");
+            renderSavings();
+        });
+    }
+
+    function initEditGoalEvents() {
+        document.getElementById("btnEditGoalBack").addEventListener("click", () => {
+            showPage("page-savings");
+            renderSavings();
+        });
+
+        document.getElementById("btnEditGoalSave").addEventListener("click", () => {
+            if (!currentEditGoalId) return;
+            const goal = savingsGoals.find(g => g.id === currentEditGoalId);
+            if (!goal) return;
+            const name = document.getElementById("editGoalName").value.trim();
+            const target = Number(document.getElementById("editGoalTarget").value || 0);
+            const link = document.getElementById("editGoalLink").value.trim();
+            const notes = document.getElementById("editGoalNotes").value.trim();
+            if (!name || target <= 0) {
+                alert("Please enter a name and a positive target.");
+                return;
+            }
+            goal.name = name;
+            goal.target = target;
+            goal.link = link || null;
+            goal.notes = notes || null;
+            updateGoalCompletion(goal);
+            saveSavings();
+            showPage("page-savings");
+            renderSavings();
+        });
+
+        document.getElementById("btnEditGoalDelete").addEventListener("click", () => {
+            if (!currentEditGoalId) return;
+            if (!confirm("Delete this goal and all its contributions?")) return;
+            savingsGoals = savingsGoals.filter(g => g.id !== currentEditGoalId);
+            currentEditGoalId = null;
+            saveSavings();
+            showPage("page-savings");
+            renderSavings();
+        });
+    }
+
+    function initAccountEvents() {
+        document.getElementById("accIncomeType").addEventListener("change", e => {
+            accountState.incomeType = e.target.value;
+            saveAccount();
+            renderAccount();
+        });
+
+        document.getElementById("accCurrencySymbol").addEventListener("input", e => {
+            settings.currencySymbol = e.target.value || "£";
+            saveSettings();
+            renderAccount();
+            renderWishlist();
+            renderSavings();
+        });
+
+        document.getElementById("btnAddCategory").addEventListener("click", () => {
+            document.getElementById("categoryNameInput").value = "";
+            openModal("modalCategoryBackdrop");
+        });
+
+        document.getElementById("categoryCancel").addEventListener("click", () => {
+            closeModal("modalCategoryBackdrop");
+        });
+
+        document.getElementById("categorySave").addEventListener("click", () => {
+            const name = document.getElementById("categoryNameInput").value.trim();
+            if (!name) {
+                alert("Enter a category name.");
+                return;
+            }
+            categories.push({
+                id: crypto.randomUUID(),
+                name
+            });
+            saveCategories();
+            closeModal("modalCategoryBackdrop");
+            renderCategories();
+            renderBills();
+        });
+
+        document.getElementById("btnAddBill").addEventListener("click", () => {
+            document.getElementById("billNameInput").value = "";
+            document.getElementById("billAmountInput").value = "";
+            populateBillCategorySelect();
+            openModal("modalBillBackdrop");
+            document.getElementById("billSave").onclick = () => {
+                const name = document.getElementById("billNameInput").value.trim();
+                const amount = Number(document.getElementById("billAmountInput").value || 0);
+                const catId = document.getElementById("billCategorySelect").value;
+                if (!name || amount <= 0 || !catId) {
+                    alert("Please enter name, amount, and category.");
+                    return;
+                }
+                bills.push({
+                    id: crypto.randomUUID(),
+                    name,
+                    amount,
+                    categoryId: catId
+                });
+                saveBills();
+                closeModal("modalBillBackdrop");
+                recalcDisposable();
+                renderBills();
+                renderDisposable();
+                renderWishlist();
+                renderSavings();
+            };
+        });
+
+        document.getElementById("billCancel").addEventListener("click", () => {
+            closeModal("modalBillBackdrop");
+        });
+
+        document.getElementById("btnAccSave").addEventListener("click", () => {
+            accountState.hourlyRate = Number(document.getElementById("accHourlyRate").value || 0);
+            accountState.hoursPerDay = Number(document.getElementById("accHoursPerDay").value || 0);
+            accountState.annualSalary = Number(document.getElementById("accAnnualSalary").value || 0);
+            accountState.daysPerWeek = Number(document.getElementById("accDaysPerWeek").value || 0);
+            accountState.weeksPerYear = Number(document.getElementById("accWeeksPerYear").value || 0);
+            accountState.taxRate = Number(document.getElementById("accTaxRate").value || 0);
+            accountState.otherDeductions = Number(document.getElementById("accOtherDeductions").value || 0);
+            recalcDisposable();
+            renderDisposable();
+            renderWishlist();
+            renderSavings();
+        });
+
+        document.getElementById("btnResetAll").addEventListener("click", () => {
+            if (!confirm("Reset all data? This cannot be undone.")) return;
+            localStorage.removeItem(STORAGE_KEYS.settings);
+            localStorage.removeItem(STORAGE_KEYS.account);
+            localStorage.removeItem(STORAGE_KEYS.wishlist);
+            localStorage.removeItem(STORAGE_KEYS.savings);
+            localStorage.removeItem(STORAGE_KEYS.categories);
+            localStorage.removeItem(STORAGE_KEYS.bills);
+            loadState();
+            applyTheme();
+            renderAccount();
+            renderWishlist();
+            renderSavings();
+            renderOptions();
+            renderAccountSummary();
+        });
+    }
+
+    function initOptionsEvents() {
+        document.getElementById("btnSaveOptions").addEventListener("click", () => {
+            settings.currencyPosition = document.getElementById("optCurrencyPosition").value;
+            settings.dateFormat = document.getElementById("optDateFormat").value;
+            settings.wishlistTimeMode = document.getElementById("optWishlistTimeMode").value;
+            settings.theme = document.getElementById("optTheme").value;
+            saveSettings();
+            applyTheme();
+            renderAccount();
+            renderWishlist();
+            renderSavings();
+            renderOptions();
+        });
+    }
 
     if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("service-worker.js").catch(() => {});
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register("service-worker.js").catch(() => {});
+        });
     }
+
+    loadState();
+    applyTheme();
+    renderAccount();
+    renderWishlist();
+    renderSavings();
+    renderOptions();
+    renderAccountSummary();
+
+    initNav();
+    initCalculatorEvents();
+    initWishlistEvents();
+    initSavingsEvents();
+    initEditGoalEvents();
+    initAccountEvents();
+    initOptionsEvents();
 </script>
 </body>
 </html>
